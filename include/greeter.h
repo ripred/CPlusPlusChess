@@ -2,6 +2,8 @@
 
 #include <string>
 
+BUGBUG
+
 namespace greeter {
 
   enum class LanguageCode { EN, DE, ES, FR };
