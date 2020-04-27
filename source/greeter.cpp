@@ -4,8 +4,6 @@ using namespace greeter;
 
 Greeter::Greeter(std::string _name) : name(_name) {}
 
-BUG
-
 std::string Greeter::greet(LanguageCode lang) const {
   switch (lang) {
     default:
