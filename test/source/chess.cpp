@@ -6,12 +6,12 @@
 #  include <sstream>
 #endif
 
-TEST_CASE("Chess") {
+TEST_CASE("chess::Board") {
 using namespace chess;
 
 Board game;
 
-CHECK(game.board[0] == 4);
+CHECK(game.board[0] == Rook);
 
 CHECK(isEmpty(game.board[0]) == false);
 CHECK(isEmpty(game.board[17]) == true);
@@ -27,4 +27,8 @@ CHECK(getSide(game.board[0]) == Black);
 CHECK(getSide(game.board[63]) == White);
 CHECK(hasMoved(game.board[0]) == false);
 CHECK(inCheck(game.board[0]) == false);
+
+Board game2(game);
+CHECK(isEmpty(game2.board[0]) == false);
+CHECK(isEmpty(game2.board[17]) == true);
 }
