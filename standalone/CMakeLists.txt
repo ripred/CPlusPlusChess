@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-project(GreeterStandalone
+project(ChessStandalone
   LANGUAGES CXX
 )
 
@@ -18,7 +18,7 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-  NAME Greeter
+  NAME chess
   SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
@@ -26,11 +26,11 @@ CPMAddPackage(
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
-add_executable(GreeterStandalone ${sources})
+add_executable(ChessStandalone ${sources})
 
-set_target_properties(GreeterStandalone PROPERTIES 
+set_target_properties(ChessStandalone PROPERTIES 
   CXX_STANDARD 17 
-  OUTPUT_NAME "Greeter"
+  OUTPUT_NAME "chess"
 )
 
-target_link_libraries(GreeterStandalone Greeter cxxopts)
+target_link_libraries(ChessStandalone chess cxxopts)
