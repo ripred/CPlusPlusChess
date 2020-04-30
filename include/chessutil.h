@@ -17,19 +17,19 @@ namespace chess {
   static int const values[] = {0, 10000, 30000, 30000, 50000, 90000, MAX_VALUE};
 
   // Masks
-  static int const Type   = 0x07;
+  static int const Type = 0x07;
   static int const Unused = 0x88;
-  static int const Side   = 0x10;
-  static int const Moved  = 0x20;
-  static int const Check  = 0x40;
+  static int const Side = 0x10;
+  static int const Moved = 0x20;
+  static int const Check = 0x40;
 
-  static int const Empty  = 0;
-  static int const Pawn   = 1;
+  static int const Empty = 0;
+  static int const Pawn = 1;
   static int const Knight = 2;
   static int const Bishop = 3;
-  static int const Rook   = 4;
-  static int const Queen  = 5;
-  static int const King   = 6;
+  static int const Rook = 4;
+  static int const Queen = 5;
+  static int const King = 6;
   static int const Marker = 7;
 
   int getType(int b);
@@ -53,4 +53,4 @@ namespace chess {
   int setCheck(int b, bool inCheck);
 
   int makeSpot(int type, int side, bool moved, bool inCheck);
-}
+}  // namespace chess

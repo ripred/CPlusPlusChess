@@ -9,14 +9,13 @@
 
 namespace chess {
   class Board {
-    private:
+  private:
+  public:
+    int board[BOARD_SIZE];
 
-    public:
-      int board[BOARD_SIZE];
-
-    public:
-      Board();
-      Board(Board const& ref);
+  public:
+    Board();
+    Board(Board const& ref);
   };
 
-}
+}  // namespace chess

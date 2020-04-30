@@ -47,7 +47,7 @@ add_library(chess ${headers} ${sources} source/chessutil.cpp include/chessutil.h
 
 set_target_properties(chess PROPERTIES CXX_STANDARD 17)
 
-# beeing a cross-platform target, we enforce enforce standards conformance on MSVC
+# being a cross-platform target, we enforce enforce standards conformance on MSVC
 target_compile_options(chess PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
 # Link dependencies (if required)
