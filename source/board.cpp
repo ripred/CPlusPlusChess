@@ -3,7 +3,7 @@
 // properties and methods for managing a chess board
 //
 
-#include "board.h"
+#include <board.h>
 
 using namespace chess;
 
