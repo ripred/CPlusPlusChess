@@ -31,7 +31,7 @@ namespace chess {
   int Move::getTo() const { return to; }
   int Move::getValue() const { return value; }
 
-  void Move::setValue(int value) { this->value = value; }
+  void Move::setValue(int val) { value = val; }
 
   bool Move::operator==(Move const& move) {
     if (this == &move) {
