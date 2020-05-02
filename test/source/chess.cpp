@@ -112,6 +112,10 @@ TEST_CASE("chess::Board") {
 
   game.setType(0, Pawn);
   CHECK(game.getType(0) == Pawn);
+  CHECK(game.getSide(0) == Black);
+  game.setSide(0, White);
+  CHECK(game.getSide(0) == White);
+  game.setSide(0, Black);
   game.setType(0, Rook);
   CHECK(game.getType(0) == Rook);
   game.setCheck(0, true);
