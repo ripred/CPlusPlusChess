@@ -8,8 +8,8 @@
 namespace chess {
 
   static int const BOARD_SIZE = 64;
-  static int const White = 1;
-  static int const Black = 0;
+  static unsigned int const White = 1;
+  static unsigned int const Black = 0;
 
   static int const MAX_VALUE = 0x7FFFFFFF;
   static int const MIN_VALUE = 0 - MAX_VALUE;
@@ -17,40 +17,40 @@ namespace chess {
   static int const values[] = {0, 10000, 30000, 30000, 50000, 90000, MAX_VALUE};
 
   // Masks
-  static int const Type = 0x07;
-  static int const Unused = 0x88;
-  static int const Side = 0x10;
-  static int const Moved = 0x20;
-  static int const Check = 0x40;
+  static unsigned int const Type = 0x07;
+  static unsigned int const Unused = 0x88;
+  static unsigned int const Side = 0x10;
+  static unsigned int const Moved = 0x20;
+  static unsigned int const Check = 0x40;
 
-  static int const Empty = 0;
-  static int const Pawn = 1;
-  static int const Knight = 2;
-  static int const Bishop = 3;
-  static int const Rook = 4;
-  static int const Queen = 5;
-  static int const King = 6;
-  static int const Marker = 7;
+  static unsigned int const Empty = 0;
+  static unsigned int const Pawn = 1;
+  static unsigned int const Knight = 2;
+  static unsigned int const Bishop = 3;
+  static unsigned int const Rook = 4;
+  static unsigned int const Queen = 5;
+  static unsigned int const King = 6;
+  static unsigned int const Marker = 7;
 
-  int getType(int b);
+  unsigned int getType(unsigned int b);
 
-  bool isEmpty(int b);
+  bool isEmpty(unsigned int b);
 
-  int getValue(int b);
+  unsigned int getValue(unsigned int b);
 
-  int getSide(int b);
+  unsigned int getSide(unsigned int b);
 
-  bool hasMoved(int b);
+  bool hasMoved(unsigned int b);
 
-  bool inCheck(int b);
+  bool inCheck(unsigned int b);
 
-  int setType(int b, int type);
+  unsigned int setType(unsigned int b, unsigned int type);
 
-  int setSide(int b, int side);
+  unsigned int setSide(unsigned int b, unsigned int side);
 
-  int setMoved(int b, bool hasMoved);
+  unsigned int setMoved(unsigned int b, bool hasMoved);
 
-  int setCheck(int b, bool inCheck);
+  unsigned int setCheck(unsigned int b, bool inCheck);
 
-  int makeSpot(int type, int side, bool moved, bool inCheck);
+  unsigned int makeSpot(unsigned int type, unsigned int side, bool moved, bool inCheck);
 }  // namespace chess

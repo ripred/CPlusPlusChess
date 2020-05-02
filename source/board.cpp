@@ -7,7 +7,7 @@
 
 using namespace chess;
 
-Board::Board() : board{} {
+Board::Board() : board{}, lastMove{0, 0, 0, 0, 0} {
   board[0 + 0 * 8] = makeSpot(Rook, Black, false, false);
   board[1 + 0 * 8] = makeSpot(Knight, Black, false, false);
   board[2 + 0 * 8] = makeSpot(Bishop, Black, false, false);
@@ -43,8 +43,31 @@ Board::Board() : board{} {
   board[7 + 7 * 8] = makeSpot(Rook, White, false, false);
 }
 
-Board::Board(Board const& ref) : board{} {
+Board::Board(Board const& ref) : board{}, lastMove{0, 0, 0, 0, 0} {
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
     board[ndx] = ref.board[ndx];
   }
 }
+
+bool Board::isEmpty(int ndx) const { return (board[ndx] & Type) == Empty; }
+
+unsigned int Board::getType(int ndx) const { return board[ndx] & Type; }
+
+unsigned int Board::getSide(int ndx) const {
+  int result = ((board[ndx] & Side) >> 4) & 0x01;
+  return result;
+}
+
+bool Board::hasMoved(int ndx) const { return (board[ndx] & Moved) != 0; }
+
+int Board::getValue(int ndx) const { return chess::getValue(board[ndx]); }
+
+bool Board::inCheck(int ndx) const { return chess::inCheck(board[ndx]); }
+
+void Board::setType(int ndx, unsigned int type) { board[ndx] = chess::setType(board[ndx], type); }
+
+void Board::setSide(int ndx, unsigned int side) { board[ndx] = chess::setSide(board[ndx], side); }
+
+void Board::setMoved(int ndx, bool hasMoved) { board[ndx] = chess::setMoved(board[ndx], hasMoved); }
+
+void Board::setCheck(int ndx, bool inCheck) { board[ndx] = chess::setCheck(board[ndx], inCheck); }

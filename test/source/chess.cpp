@@ -76,7 +76,6 @@ TEST_CASE("chess::Board") {
 
   CHECK(isEmpty(game.board[0]) == false);
   CHECK(isEmpty(game.board[17]) == true);
-
   CHECK(getValue(game.board[0]) == values[Rook]);
   CHECK(getValue(game.board[1]) == values[Knight]);
   CHECK(getValue(game.board[2]) == values[Bishop]);
@@ -93,6 +92,21 @@ TEST_CASE("chess::Board") {
   Board game2(game);
   CHECK(isEmpty(game2.board[0]) == false);
   CHECK(isEmpty(game2.board[17]) == true);
+
+  // test chessutil fascade
+  CHECK(game.isEmpty(0) == false);
+  CHECK(game.isEmpty(17) == true);
+  CHECK(game.getValue(0) == values[Rook]);
+  CHECK(game.getValue(1) == values[Knight]);
+  CHECK(game.getValue(2) == values[Bishop]);
+  CHECK(game.getValue(3) == values[Queen]);
+  CHECK(game.getValue(4) == values[King]);
+  CHECK(game.getValue(8) == values[Pawn]);
+  CHECK(game.getValue(63) == values[Rook]);
+  CHECK(game.getSide(0) == Black);
+  CHECK(game.getSide(63) == White);
+  CHECK(game.hasMoved(0) == false);
+  CHECK(game.inCheck(0) == false);
 }
 
 TEST_CASE("chess::Move") {
