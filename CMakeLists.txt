@@ -43,7 +43,7 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/
 # add_library(chess INTERFACE)  
 # set_target_properties(chess PROPERTIES INTERFACE_COMPILE_FEATURES cxx_std_17)
 
-add_library(chess ${headers} ${sources} source/chessutil.cpp include/chessutil.h source/Board.cpp include/Board.h)
+add_library(chess ${headers} ${sources})
 
 set_target_properties(chess PROPERTIES CXX_STANDARD 17)
 
