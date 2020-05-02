@@ -52,6 +52,7 @@ namespace chess {
     void setSide(int ndx, unsigned int side);
     void setMoved(int ndx, bool hasMoved);
     void setCheck(int ndx, bool inCheck);
+    vector<string> to_string(Board const& b) const;
   };
 
 }  // namespace chess

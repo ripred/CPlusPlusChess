@@ -124,6 +124,21 @@ TEST_CASE("chess::Board") {
   CHECK(game.hasMoved(0) == true);
   game.setCheck(0, true);
   CHECK(game.inCheck(0) == true);
+
+  vector<string> const lines = game.to_string(game);
+  vector<string const> const correct{
+      "\"8  r  n  b  q  k  b  n  r \"", "\"7  p  p  p  p  p  p  p  p \"",
+      "\"6  .     .     .     .    \"", "\"5     .     .     .     . \"",
+      "\"4  .     .     .     .    \"", "\"3     .     .     .     . \"",
+      "\"2  P  P  P  P  P  P  P  P \"", "\"1  R  N  B  Q  K  B  N  R \"",
+      "\"   A  B  C  D  E  F  G  H\""};
+
+  CHECK(lines.size() == correct.size());
+
+  for (int i = 0; i < 9; i++) {
+    string const answer = '"' + lines[i] + '"';
+    CHECK(answer == correct[i]);
+  }
 }
 
 TEST_CASE("chess::Move") {

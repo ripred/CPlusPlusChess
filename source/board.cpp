@@ -5,6 +5,17 @@
 
 #include <board.h>
 
+#include <algorithm>
+#include <cctype>
+#include <iostream>
+#include <locale>
+#include <string>
+
+using std::cout;
+using std::endl;
+using std::toupper;
+using std::transform;
+
 using namespace chess;
 
 Board::Board() : board{}, lastMove{0, 0, 0, 0, 0} {
@@ -68,3 +79,52 @@ void Board::setSide(int ndx, unsigned int side) { board[ndx] = chess::setSide(bo
 void Board::setMoved(int ndx, bool hasMoved) { board[ndx] = chess::setMoved(board[ndx], hasMoved); }
 
 void Board::setCheck(int ndx, bool inCheck) { board[ndx] = chess::setCheck(board[ndx], inCheck); }
+
+vector<string> Board::to_string(Board const& b) const {
+  char const blackPieces[7] = {' ', 'p', 'n', 'b', 'r', 'q', 'k'};
+  char const whitePieces[7] = {' ', 'P', 'N', 'B', 'R', 'Q', 'K'};
+
+  vector<string> result{};
+  string line{};
+
+  for (auto i = 0; i < BOARD_SIZE; i++) {
+    if (i >= 8 && i % 8 == 0) {
+      //      cout << endl;
+      result.push_back(line);
+      line.clear();
+    }
+
+    auto const type = b.getType(i);
+    auto const side = b.getSide(i);
+
+    if (i % 8 == 0) {
+      //      cout << (8 - (i / 8)) << ' ';
+      line += std::to_string(8 - (i / 8)) + ' ';
+    }
+    //    cout << ' ';
+    line += ' ';
+
+    switch (type) {
+      case Pawn:
+      case Knight:
+      case Bishop:
+      case Rook:
+      case Queen:
+      case King:
+        //        cout << ((side == White) ? whitePieces[type] : blackPieces[type]);
+        line += ((side == White) ? whitePieces[type] : blackPieces[type]);
+        break;
+      default:
+        //        cout << ((((i / 8) + (i % 8)) % 2 == 1) ? ' ' : '.');
+        line += ((((i / 8) + (i % 8)) % 2 == 1) ? ' ' : '.');
+        break;
+    }
+    //    cout << ' ';
+    line += ' ';
+  }
+  //  cout << endl << "   A  B  C  D  E  F  G  H" << endl;
+  result.push_back(line);
+  result.emplace_back("   A  B  C  D  E  F  G  H");
+
+  return result;
+}

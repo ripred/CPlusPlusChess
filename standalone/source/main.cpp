@@ -8,9 +8,9 @@ using std::endl;
 using namespace chess;
 
 int main(int argc, char** argv) {
-  std::cout << "chess start" << std::endl;
   Board board;
-  std::cout << "chess finish" << std::endl;
+  auto lines = board.to_string(board);
+  for_each(begin(lines), end(lines), [](auto const& line) { cout << line << endl; });
 
   return 0;
 }
