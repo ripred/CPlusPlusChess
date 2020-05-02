@@ -45,8 +45,8 @@ namespace chess {
     string chessNotation = rows[fromCol] + std::to_string(8 - fromRow) + " to " + rows[toCol]
                            + std::to_string(8 - toRow);
 
-    string result = "[Move from" + std::to_string(fromCol) + "," + std::to_string(fromRow) + " to "
-                    + std::to_string(toCol) + "," + std::to_string(toRow) + "(" + chessNotation
+    string result = "[Move from " + std::to_string(fromCol) + "," + std::to_string(fromRow) + " to "
+                    + std::to_string(toCol) + "," + std::to_string(toRow) + " (" + chessNotation
                     + ") value:" + std::to_string(value) + "]";
 
     return result;

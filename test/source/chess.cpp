@@ -121,4 +121,10 @@ TEST_CASE("chess::Move") {
   CHECK(move1.getFrom() == move2.getFrom());
   CHECK(move1.getTo() == move2.getTo());
   CHECK(move1.getValue() == move2.getValue());
+
+  bool bcomp = (move1 == move2);
+  CHECK(bcomp == true);
+
+  string correct = "[Move from 1,2 to 3,4 (b6 to d4) value:2000]";
+  CHECK(move1.to_string() == correct);
 }
