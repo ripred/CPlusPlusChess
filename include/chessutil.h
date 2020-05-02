@@ -36,7 +36,7 @@ namespace chess {
 
   bool isEmpty(unsigned int b);
 
-  unsigned int getValue(unsigned int b);
+  int getValue(unsigned int b);
 
   unsigned int getSide(unsigned int b);
 

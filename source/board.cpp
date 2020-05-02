@@ -49,16 +49,13 @@ Board::Board(Board const& ref) : board{}, lastMove{0, 0, 0, 0, 0} {
   }
 }
 
-bool Board::isEmpty(int ndx) const { return (board[ndx] & Type) == Empty; }
+bool Board::isEmpty(int ndx) const { return chess::isEmpty(board[ndx]); }
 
-unsigned int Board::getType(int ndx) const { return board[ndx] & Type; }
+unsigned int Board::getType(int ndx) const { return chess::getType(board[ndx]); }
 
-unsigned int Board::getSide(int ndx) const {
-  int result = ((board[ndx] & Side) >> 4) & 0x01;
-  return result;
-}
+unsigned int Board::getSide(int ndx) const { return chess::getSide(board[ndx]); }
 
-bool Board::hasMoved(int ndx) const { return (board[ndx] & Moved) != 0; }
+bool Board::hasMoved(int ndx) const { return chess::hasMoved(board[ndx]); }
 
 int Board::getValue(int ndx) const { return chess::getValue(board[ndx]); }
 

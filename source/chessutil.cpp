@@ -11,7 +11,7 @@ namespace chess {
 
   bool isEmpty(unsigned int b) { return getType(b) == Empty; }
 
-  unsigned int getValue(unsigned int b) { return values[getType(b)]; }
+  int getValue(unsigned int b) { return values[getType(b)]; }
 
   unsigned int getSide(unsigned int b) { return (Side & b) >> 4; }
 
