@@ -1,11 +1,9 @@
 //
-// Board.cpp
+// board.cpp
 // properties and methods for managing a chess board
 //
 
-#include "Board.h"
-
-#include <array>
+#include "board.h"
 
 using namespace chess;
 

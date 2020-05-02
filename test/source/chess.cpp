@@ -5,7 +5,7 @@
 #  include <sstream>
 #endif
 
-#include <Board.h>
+#include <board.h>
 #include <chessutil.h>
 
 TEST_CASE("chess::chessutil") {
