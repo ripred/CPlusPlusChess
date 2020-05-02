@@ -68,6 +68,7 @@ TEST_CASE("chess::chessutil") {
 TEST_CASE("chess::Board") {
   using namespace chess;
 
+  // test default constrcutor
   Board game;
 
   CHECK(game.board[0] == Rook);
@@ -87,6 +88,7 @@ TEST_CASE("chess::Board") {
   CHECK(hasMoved(game.board[0]) == false);
   CHECK(inCheck(game.board[0]) == false);
 
+  // test copy constrcutor
   Board game2(game);
   CHECK(isEmpty(game2.board[0]) == false);
   CHECK(isEmpty(game2.board[17]) == true);
