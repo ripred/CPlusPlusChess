@@ -3,6 +3,5 @@
 .DS_Store
 .idea
 cmake-build-debug
-cmake-build
-standalone.build
-test.build
+bs
+ts
