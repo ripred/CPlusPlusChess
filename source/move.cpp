@@ -33,7 +33,7 @@ namespace chess {
 
   void Move::setValue(int val) { value = val; }
 
-  bool Move::operator==(Move const& move) {
+  bool Move::operator==(Move const& move) const {
     if (this == &move) {
       return true;
     }

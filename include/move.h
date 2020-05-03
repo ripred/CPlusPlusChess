@@ -31,7 +31,7 @@ namespace chess {
     int getValue() const;
     void setValue(int value);
 
-    bool operator==(Move const& move);
+    bool operator==(Move const& move) const;
 
     string to_string() const;
   };
