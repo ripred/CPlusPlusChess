@@ -3,6 +3,7 @@
 #include <move.h>
 
 #include <iostream>
+#include <algorithm>
 #include <string>
 
 using std::cout;
