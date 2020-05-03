@@ -1,4 +1,6 @@
 #include <board.h>
+#include <chessutil.h>
+#include <move.h>
 
 #include <iostream>
 #include <string>
