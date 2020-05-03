@@ -2,8 +2,8 @@
 #include <chessutil.h>
 #include <move.h>
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 using std::cout;
