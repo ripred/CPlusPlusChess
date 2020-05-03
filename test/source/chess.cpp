@@ -134,10 +134,12 @@ TEST_CASE("chess::Board") {
 
   CHECK(lines.size() == correct.size());
 
-  for (int i = 0; i < 9; i++) {
+  for (size_t i = 0; i < lines.size(); i++) {
     string const answer = '"' + lines[i] + '"';
     CHECK(answer == correct[i]);
   }
+
+  game.generateMoveLists();
 }
 
 TEST_CASE("chess::Move") {
