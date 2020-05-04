@@ -257,10 +257,16 @@ TEST_CASE("chess::Board") {
   CHECK(game.moves2.size() == 20);
 
   // make the first 100 moves (50 successive turns for each side)
+  int expectedTurns = 100;
   for (int i = 0; i < 100; i++) {
     if (game.moves1.size() > 0) {
       game.advanceTurn();
       game.executeMove(game.moves1[0]);
+      if (game.checkDrawByRepetition(game.lastMove, 3)) {
+        std::cout << "Draw By Repetition. Same move made 3 times in a row" << std::endl;
+        expectedTurns = game.turns;
+        break;
+      }
 
       //    std::cout << "Turn: " << std::to_string(game.turns) << " " << game.lastMove.to_string()
       //    << std::endl; lines = game.to_string(game); for (auto line : lines) {
@@ -271,7 +277,7 @@ TEST_CASE("chess::Board") {
   }
 
   // test game history was remembered
-  CHECK(game.history.size() == 100);
+  CHECK(game.history.size() == expectedTurns);
 
   // std::cout << std::endl << "Turn: " << std::to_string(game.turns) << " " <<
   // game.lastMove.to_string() << std::endl; lines = game.to_string(game); for (auto line : lines) {
