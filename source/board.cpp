@@ -47,6 +47,8 @@ Board::Board() {
   board[5 + 7 * 8] = makeSpot(Bishop, White, false, false);
   board[6 + 7 * 8] = makeSpot(Knight, White, false, false);
   board[7 + 7 * 8] = makeSpot(Rook, White, false, false);
+
+  generateMoveLists();
 }
 
 bool Board::isEmpty(int const ndx) const { return chess::isEmpty(board[ndx]); }
@@ -245,8 +247,9 @@ void Board::advanceTurn() {
 
 vector<Move> Board::getMovesSorted(unsigned int const side) {
   vector<Move> moves = getMoves(side, true);
+  // sort in descending order by move value
   sort(moves.begin(), moves.end(),
-       [](Move const& m1, Move const& m2) { return m1.getValue() < m2.getValue(); });
+       [](Move const& m1, Move const& m2) { return m1.getValue() > m2.getValue(); });
   return moves;
 }
 
@@ -337,13 +340,14 @@ void Board::addMoveIfValid(vector<Move>& moves, int fromCol, int fromRow, int to
   int ti = toCol + toRow * 8;
 
   int value = 0;
-  unsigned int pieceType = chess::getType(fi);
-  unsigned int pieceSide = chess::getSide(fi);
-  if (!chess::isEmpty(ti)) {
-    if (chess::getSide(fi) == chess::getSide(ti)) {
+  unsigned int pieceType = getType(fi);
+  unsigned int pieceSide = getSide(fi);
+
+  if (!isEmpty(ti)) {
+    if (getSide(fi) == getSide(ti)) {
       return;
     }
-    value = chess::getValue(ti);
+    value = getValue(ti);
   }
 
   // extra checks if moving a pawn...
@@ -352,27 +356,27 @@ void Board::addMoveIfValid(vector<Move>& moves, int fromCol, int fromRow, int to
     // if double push
     if (abs(fromRow - toRow) == 2) {
       // not allowed if the pawn has already moved
-      if (chess::hasMoved(fi) || !chess::isEmpty(fromCol + (fromRow + forward) * 8)) {
+      if (hasMoved(fi) || !isEmpty(fromCol + (fromRow + forward) * 8)) {
         return;
       }
     }
     // if advancing in same column
     if (fromCol == toCol) {
       // not allowed if a piece is in the way
-      if (!chess::isEmpty(ti)) {
+      if (!isEmpty(ti)) {
         return;
       }
     } else {
       // pawns cannot move diagonally unless
-      if (chess::isEmpty(ti)) {
+      if (isEmpty(ti)) {
         if (lastMove.getToRow() != (toRow - forward) || lastMove.getToCol() != toCol) {
           return;
         }
         // capturing en passant
-        value = chess::getValue(Pawn);
+        value = getValue(Pawn);
       } else {
         // capturing normal
-        value = chess::getValue(ti);
+        value = getValue(ti);
       }
     }
   }

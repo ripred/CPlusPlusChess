@@ -66,6 +66,8 @@ TEST_CASE("chess::chessutil") {
   CHECK(setMoved(setSide(setType(Empty, Pawn), Black), true) == (Moved | Pawn));
 }
 
+#include <iostream>
+
 TEST_CASE("chess::Board") {
   using namespace chess;
 
@@ -139,7 +141,143 @@ TEST_CASE("chess::Board") {
     CHECK(answer == correct[i]);
   }
 
-  game.generateMoveLists();
+  // reset board to new game
+  game = Board();
+
+  // test piece moves on default constructor (new game)
+
+  // test move primitives
+  CHECK(game.isValidSpot(0, 0) == true);
+  CHECK(game.isValidSpot(0, 7) == true);
+  CHECK(game.isValidSpot(7, 0) == true);
+  CHECK(game.isValidSpot(7, 7) == true);
+  CHECK(game.isValidSpot(0, 8) == false);
+  CHECK(game.isValidSpot(8, 0) == false);
+  CHECK(game.isValidSpot(8, 8) == false);
+  CHECK(game.isValidSpot(0, -1) == false);
+  CHECK(game.isValidSpot(-1, 0) == false);
+  CHECK(game.isValidSpot(-1, -1) == false);
+  CHECK(game.isValidSpot(8, -1) == false);
+  CHECK(game.isValidSpot(-1, 8) == false);
+
+  vector<Move> moves{};
+
+  // test valid first moves of leftmost black pawn
+  game.addMoveIfValid(moves, 0, 1, 0, 2);  // single push
+  CHECK(moves.size() == 1);
+  game.addMoveIfValid(moves, 0, 1, 0, 3);  // double push
+  CHECK(moves.size() == 2);
+
+  // test remaining black pawns
+  game.addMoveIfValid(moves, 1, 1, 1, 2);  // single push
+  CHECK(moves.size() == 3);
+  game.addMoveIfValid(moves, 1, 1, 1, 3);  // double push
+  CHECK(moves.size() == 4);
+  game.addMoveIfValid(moves, 2, 1, 2, 2);  // single push
+  CHECK(moves.size() == 5);
+  game.addMoveIfValid(moves, 2, 1, 2, 3);  // double push
+  CHECK(moves.size() == 6);
+  game.addMoveIfValid(moves, 3, 1, 3, 2);  // single push
+  CHECK(moves.size() == 7);
+  game.addMoveIfValid(moves, 3, 1, 3, 3);  // double push
+  CHECK(moves.size() == 8);
+  game.addMoveIfValid(moves, 4, 1, 4, 2);  // single push
+  CHECK(moves.size() == 9);
+  game.addMoveIfValid(moves, 4, 1, 4, 3);  // double push
+  CHECK(moves.size() == 10);
+  game.addMoveIfValid(moves, 5, 1, 5, 2);  // single push
+  CHECK(moves.size() == 11);
+  game.addMoveIfValid(moves, 5, 1, 5, 3);  // double push
+  CHECK(moves.size() == 12);
+  game.addMoveIfValid(moves, 6, 1, 6, 2);  // single push
+  CHECK(moves.size() == 13);
+  game.addMoveIfValid(moves, 6, 1, 6, 3);  // double push
+  CHECK(moves.size() == 14);
+  game.addMoveIfValid(moves, 7, 1, 7, 2);  // single push
+  CHECK(moves.size() == 15);
+  game.addMoveIfValid(moves, 7, 1, 7, 3);  // double push
+  CHECK(moves.size() == 16);
+
+  // test valid moves of black knights
+  game.addMoveIfValid(moves, 1, 0, 0, 2);
+  CHECK(moves.size() == 17);
+  game.addMoveIfValid(moves, 1, 0, 2, 2);
+  CHECK(moves.size() == 18);
+  game.addMoveIfValid(moves, 6, 0, 5, 2);
+  CHECK(moves.size() == 19);
+  game.addMoveIfValid(moves, 6, 0, 7, 2);
+  CHECK(moves.size() == 20);
+
+  // pawns
+  CHECK(game.getPawnMoves(0, 1).size() == 2);  // black
+  CHECK(game.getPawnMoves(1, 1).size() == 2);
+  CHECK(game.getPawnMoves(2, 1).size() == 2);
+  CHECK(game.getPawnMoves(3, 1).size() == 2);
+  CHECK(game.getPawnMoves(4, 1).size() == 2);
+  CHECK(game.getPawnMoves(5, 1).size() == 2);
+  CHECK(game.getPawnMoves(6, 1).size() == 2);
+  CHECK(game.getPawnMoves(7, 1).size() == 2);
+  CHECK(game.getPawnMoves(0, 6).size() == 2);  // white
+  CHECK(game.getPawnMoves(1, 6).size() == 2);
+  CHECK(game.getPawnMoves(2, 6).size() == 2);
+  CHECK(game.getPawnMoves(3, 6).size() == 2);
+  CHECK(game.getPawnMoves(4, 6).size() == 2);
+  CHECK(game.getPawnMoves(5, 6).size() == 2);
+  CHECK(game.getPawnMoves(6, 6).size() == 2);
+  CHECK(game.getPawnMoves(7, 6).size() == 2);
+
+  // rooks
+  CHECK(game.getRookMoves(0, 0).size() == 0);  // black
+  CHECK(game.getRookMoves(7, 0).size() == 0);
+  CHECK(game.getRookMoves(0, 7).size() == 0);  // white
+  CHECK(game.getRookMoves(7, 7).size() == 0);
+
+  // knights
+  CHECK(game.getKnightMoves(1, 0).size() == 2);  // black
+  CHECK(game.getKnightMoves(6, 0).size() == 2);
+  CHECK(game.getKnightMoves(1, 7).size() == 2);  // white
+  CHECK(game.getKnightMoves(6, 7).size() == 2);
+
+  // bishops
+  CHECK(game.getBishopMoves(2, 0).size() == 0);  // black
+  CHECK(game.getBishopMoves(5, 0).size() == 0);
+  CHECK(game.getBishopMoves(2, 7).size() == 0);  // white
+  CHECK(game.getBishopMoves(5, 7).size() == 0);
+
+  // queens
+  CHECK(game.getQueenMoves(3, 0).size() == 0);  // black
+  CHECK(game.getQueenMoves(3, 7).size() == 0);  // white
+
+  // kings
+  CHECK(game.getKingMoves(4, 0).size() == 0);  // black
+  CHECK(game.getKingMoves(4, 7).size() == 0);  // white
+
+  // all moves
+  CHECK(game.moves1.size() == 20);
+  CHECK(game.moves2.size() == 20);
+
+  // make the first 100 moves (50 successive turns for each side)
+  for (int i = 0; i < 100; i++) {
+    if (game.moves1.size() > 0) {
+      game.advanceTurn();
+      game.executeMove(game.moves1[0]);
+
+      //    std::cout << "Turn: " << std::to_string(game.turns) << " " << game.lastMove.to_string()
+      //    << std::endl; lines = game.to_string(game); for (auto line : lines) {
+      //      std::cout << line << std::endl;
+      //    }
+      //    std::cout << std::endl;
+    }
+  }
+
+  // test game history was remembered
+  CHECK(game.history.size() == 100);
+
+  // std::cout << std::endl << "Turn: " << std::to_string(game.turns) << " " <<
+  // game.lastMove.to_string() << std::endl; lines = game.to_string(game); for (auto line : lines) {
+  //  std::cout << line << std::endl;
+  //}
+  // std::cout << std::endl;
 }
 
 TEST_CASE("chess::Move") {
