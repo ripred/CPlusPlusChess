@@ -367,15 +367,15 @@ TEST_CASE("chess::Board") {
     }
   }
   CHECK(castleCheck == true);
-  castleCheck = false;
-  CHECK(castleCheck == false);
 
-
-  // std::cout << std::endl << "Turn: " << std::to_string(game.turns) << " " <<
-  // game.lastMove.to_string() << std::endl; lines = game.to_string(game); for (auto line : lines) {
-  //  std::cout << line << std::endl;
-  //}
-  // std::cout << std::endl;
+  std::cout << std::endl
+            << "Turn: " << std::to_string(game.turns) << " " << game.lastMove.to_string()
+            << std::endl;
+  lines = game.to_string(game);
+  for (auto line : lines) {
+    std::cout << line << std::endl;
+  }
+  std::cout << std::endl;
 }
 
 TEST_CASE("chess::Move") {
