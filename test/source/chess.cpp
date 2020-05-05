@@ -287,9 +287,9 @@ TEST_CASE("chess::Board") {
   game.turn = 1;                        // set game to white's turn
 
   vector<Move> pawnMoves = game.getPawnMoves(3, 3);  // get all legal moves for the white pawn
-  CHECK(pawnMoves.size()
-        == 2);  // ensure that 2 moves were found: single-push and en-passant capture on right.
+  // ensure that 2 moves were found: single-push and en-passant capture on right.
   // (double-push is invalid since white pawn has moved)
+  CHECK(pawnMoves.size() == 2);
   CHECK(pawnMoves.size() > 0);
   if (pawnMoves.size() > 0) {
     Move move{0, 0, 0, 0, 0};
@@ -361,8 +361,6 @@ TEST_CASE("chess::Board") {
     }
   }
   CHECK(castleCheck == true);
-
-  //
 
   std::cout << std::endl;
   std::cout << "Turn: " << std::to_string(game.turns) << " ";
