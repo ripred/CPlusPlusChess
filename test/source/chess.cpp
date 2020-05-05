@@ -312,6 +312,10 @@ TEST_CASE("chess::Board") {
         CHECK(toRow == 2);
         CHECK(move.getValue()
               != 0);  // the move should capture a piece and so should have some value
+
+        auto numTaken = game.taken2.size();
+        game.executeMove(move);
+        CHECK(game.taken2.size() == numTaken + 1);
       }
     }
   }
@@ -330,12 +334,40 @@ TEST_CASE("chess::Board") {
   numKingMoves = kingMoves.size();
   CHECK(numKingMoves == 2);  // should be 2 moves: castle and move on left
 
+  // ensure that we execute and test castling on the left
+  bool castleCheck = false;
+  if (numKingMoves == 2) {
+    Move move = kingMoves[1];
+    if (move.getToCol() == 2) {
+      // this move is the castle on the left
+      Board current = Board(game);  // make temp copy of current board state
+      game.executeMove(move);
+      castleCheck = true;
+      game = current;  // restore board state
+    }
+  }
+  CHECK(castleCheck == true);
+  castleCheck = false;
+
   // remove pieces between right rook and king
   game.board[5 + 0 * 8] = Empty;
   game.board[6 + 0 * 8] = Empty;
   kingMoves = game.getKingMoves(4, 0);  // black king with castling on left and right possible
   numKingMoves = kingMoves.size();
   CHECK(numKingMoves == 4);  // should be 4 moves: castle and move on left and right
+
+  if (numKingMoves == 4) {
+    Move move = kingMoves[2];
+    if (move.getToCol() == 6) {
+      // this move is the castle on the right
+      Board current = Board(game);  // make temp copy of current board state
+      game.executeMove(move);
+      castleCheck = true;
+      game = current;  // restore board state
+    }
+  }
+  CHECK(castleCheck == true);
+  castleCheck = false;
 
   // std::cout << std::endl << "Turn: " << std::to_string(game.turns) << " " <<
   // game.lastMove.to_string() << std::endl; lines = game.to_string(game); for (auto line : lines) {
