@@ -92,12 +92,10 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a pawn could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getPawnMoves(int col, int row) const;
 
-    [[nodiscard]] bool addSlider(vector<Move> moves, int col, int row, int x, int y) const;
+    [[nodiscard]] bool addSlider(vector<Move>& moves, int col, int row, int x, int y) const;
 
     /**
      * Get a list of all possible moves for a rook at the given location on the board.
@@ -106,8 +104,6 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a rook could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getRookMoves(int col, int row) const;
 
@@ -118,8 +114,6 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a knight could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getKnightMoves(int col, int row) const;
 
@@ -130,8 +124,6 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a bishop could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getBishopMoves(int col, int row) const;
 
@@ -142,8 +134,6 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a queen could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getQueenMoves(int col, int row) const;
 
@@ -154,8 +144,6 @@ namespace chess {
      * @param row The row on the board to get moves from
      * @return A new vector<Move> containing all possible moves a king could make from the given
      * spot
-     * @throws IllegalArgumentException if the specified location is invalid or if it does not
-     * contain a piece to move.
      */
     [[nodiscard]] vector<Move> getKingMoves(int col, int row) const;
   };

@@ -108,7 +108,7 @@ vector<string> Board::to_string(Board const& b) {
     line += ' ';
   }
   result.push_back(line);
-  result.emplace_back("   A  B  C  D  E  F  G  H");
+  result.emplace_back("   a  b  c  d  e  f  g  h");
 
   return result;
 }
@@ -138,10 +138,16 @@ bool Board::checkDrawByRepetition(Move const& move, int const maxRepetitions) co
   return false;
 }
 
+/**
+ * See if the king is in check for the specified side
+ *
+ * @param side The side to check for
+ * @return true if the king is in check
+ * spot
+ */
 bool Board::kingInCheck(unsigned int const side) {
   unsigned int otherSide = (side + 1) % 2;
   vector<Move> opponentMoves = getMoves(otherSide, false);
-  // int numMoves = opponentMoves.size();
 
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
     if (getType(ndx) != King || getSide(ndx) != side) continue;
@@ -155,6 +161,12 @@ bool Board::kingInCheck(unsigned int const side) {
   return false;
 }
 
+/**
+ * Make a move of a piece on the board
+ *
+ * @param move The Move to make
+ * @return nothing
+ */
 void Board::executeMove(Move const& move) {
   int fx = move.getFromCol();
   int fy = move.getFromRow();
@@ -253,13 +265,24 @@ vector<Move> Board::getMovesSorted(unsigned int const side) {
   return moves;
 }
 
+/**
+ * Get a list of all legal moves currently available for the specified side
+ *
+ * @param side The side to get moves for
+ * @param checkKing Flag indicating whether to check each move to see if it places
+ *                  the king in check.
+ *                  *NOTE* Setting this flag to true causes the method to call itself
+ *                  recursively after making the move for each valid move available to
+ *                  the opponent to see if the initial move placed the king in check.
+ * @return A list of all valid moves currently available for the specified side
+ *
+ */
 vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
   vector<Move> moves;
   vector<Move> pieceMoves;
 
-  // We also update the pieces array and numPieces for this side
+  // We also update the pieces array for this side
   vector<unsigned int> pieces;
-  int numPieces = 0;
 
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
     if (isEmpty(ndx) || getSide(ndx) != side) continue;
@@ -267,7 +290,6 @@ vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
     // add piece to list of pieces for this side
     unsigned int b = board[ndx];
     pieces.push_back(b);
-    numPieces++;
 
     int col = ndx % 8;
     int row = ndx / 8;
@@ -312,6 +334,14 @@ vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
   return moves;
 }
 
+/**
+ * Clean a list of moves by removing any moves that place the king in check
+ *
+ * @param moves The list of Moves to check
+ * @param side The side to get moves for
+ * @return The list of moves sans any illegal moves that would place the king
+ *         in check
+ */
 vector<Move> Board::cleanupMoves(vector<Move>& moves, unsigned int const side) const {
   vector<Move> valid;
   for (Move const& move : moves) {
@@ -324,10 +354,27 @@ vector<Move> Board::cleanupMoves(vector<Move>& moves, unsigned int const side) c
   return valid;
 }
 
+/**
+ * Check coordinates to see if they are valid or off of the board
+ *
+ * @param col The column to check
+ * @param row The row to check
+ * @return true if the coorinates are on the board
+ */
 bool Board::isValidSpot(int const col, int const row) {
   return (col >= 0) && (col <= 7) && (row >= 0) && (row <= 7);
 }
 
+/**
+ * Add a Move to a list if it is legal
+ *
+ * @param moves The list to append to if the move is legal
+ * @param fromCol The column to move from
+ * @param fromRow The row to move from
+ * @param toCol The column to move to
+ * @param fromRow The row to move to
+ * @return nothing.  If the move is legal the specified list is updated to include the move
+ */
 void Board::addMoveIfValid(vector<Move>& moves, int fromCol, int fromRow, int toCol,
                            int toRow) const {
   if (!isValidSpot(fromCol, fromRow)) {
@@ -391,8 +438,6 @@ void Board::addMoveIfValid(vector<Move>& moves, int fromCol, int fromRow, int to
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a pawn could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getPawnMoves(int col, int row) const {
   int ndx = col + row * 8;
@@ -439,7 +484,25 @@ vector<Move> Board::getPawnMoves(int col, int row) const {
   return moves;
 }
 
-bool Board::addSlider(vector<Move> moves, int col, int row, int x, int y) const {
+/**
+ * Utility method for pieces that can 'slide' one or more spots.  Called
+ * by the move generation methods for rooks, bishops and queens.  Basically
+ * it is the same as addMoveIfValid(...) but it includes adding end spots
+ * occupied by an opponent piece that can be captured and returns true if
+ * the check for more spots in this 'slide' should continue or false if the
+ * slide has terminated.
+ *
+ * @param moves Reference to the list of moves to add to
+ * @param col The column on the board to move from
+ * @param row The row on the board to move from
+ * @param x The column on the board to move to
+ * @param y The row on the board to move to
+ * @return true if the check for more 'slide' spots should
+ *         continue for this piece or false if the 'slide' has
+ *         completed by going off of the board or terminating
+ *         at a non-empty spot.
+ */
+bool Board::addSlider(vector<Move>& moves, int col, int row, int x, int y) const {
   if (!isValidSpot(x, y)) {
     return false;
   }
@@ -459,8 +522,6 @@ bool Board::addSlider(vector<Move> moves, int col, int row, int x, int y) const 
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a rook could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getRookMoves(int col, int row) const {
   vector<Move> moves;
@@ -495,8 +556,6 @@ vector<Move> Board::getRookMoves(int col, int row) const {
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a knight could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getKnightMoves(int col, int row) const {
   vector<Move> moves;
@@ -520,8 +579,6 @@ vector<Move> Board::getKnightMoves(int col, int row) const {
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a bishop could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getBishopMoves(int col, int row) const {
   vector<Move> moves;
@@ -557,8 +614,6 @@ vector<Move> Board::getBishopMoves(int col, int row) const {
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a queen could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getQueenMoves(int col, int row) const {
   vector<Move> moves;
@@ -575,8 +630,6 @@ vector<Move> Board::getQueenMoves(int col, int row) const {
  * @param row The row on the board to get moves from
  * @return A new vector<Move> containing all possible moves a king could make from the given
  * spot
- * @throws IllegalArgumentException if the specified location is invalid or if it does not
- * contain a piece to move.
  */
 vector<Move> Board::getKingMoves(int col, int row) const {
   int ndx = col + row * 8;

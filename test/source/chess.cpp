@@ -132,7 +132,7 @@ TEST_CASE("chess::Board") {
                          "\"6  .     .     .     .    \"", "\"5     .     .     .     . \"",
                          "\"4  .     .     .     .    \"", "\"3     .     .     .     . \"",
                          "\"2  P  P  P  P  P  P  P  P \"", "\"1  R  N  B  Q  K  B  N  R \"",
-                         "\"   A  B  C  D  E  F  G  H\""};
+                         "\"   a  b  c  d  e  f  g  h\""};
 
   CHECK(lines.size() == correct.size());
 
