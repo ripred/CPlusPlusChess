@@ -362,9 +362,11 @@ TEST_CASE("chess::Board") {
   }
   CHECK(castleCheck == true);
 
-  std::cout << std::endl
-            << "Turn: " << std::to_string(game.turns) << " " << game.lastMove.to_string()
-            << std::endl;
+  //
+
+  std::cout << std::endl;
+  std::cout << "Turn: " << std::to_string(game.turns) << " ";
+  std::cout << game.lastMove.to_string() << std::endl;
   lines = game.to_string(game);
   for (auto line : lines) {
     std::cout << line << std::endl;
