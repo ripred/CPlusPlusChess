@@ -258,23 +258,19 @@ TEST_CASE("chess::Board") {
 
   // make the first 100 moves (50 successive turns for each side)
   int expectedTurns = 100;
+  bool check4DrawByRepetition = false;
   for (int i = 0; i < 100; i++) {
     if (game.moves1.size() > 0) {
       game.advanceTurn();
       game.executeMove(game.moves1[0]);
-      if (game.checkDrawByRepetition(game.lastMove, 3)) {
-        std::cout << "Draw By Repetition. Same move made 3 times in a row" << std::endl;
+      check4DrawByRepetition = game.checkDrawByRepetition(game.lastMove, 3);
+      if (check4DrawByRepetition) {
         expectedTurns = game.turns;
         break;
       }
-
-      //    std::cout << "Turn: " << std::to_string(game.turns) << " " << game.lastMove.to_string()
-      //    << std::endl; lines = game.to_string(game); for (auto line : lines) {
-      //      std::cout << line << std::endl;
-      //    }
-      //    std::cout << std::endl;
     }
   }
+  CHECK(check4DrawByRepetition == true);
 
   // test game history was remembered
   CHECK(game.history.size() == expectedTurns);
@@ -294,16 +290,16 @@ TEST_CASE("chess::Board") {
   CHECK(pawnMoves.size()
         == 2);  // ensure that 2 moves were found: single-push and en-passant capture on right.
   // (double-push is invalid since white pawn has moved)
+  CHECK(pawnMoves.size() > 0);
   if (pawnMoves.size() > 0) {
-    Move& move = pawnMoves[0];
-    std::cout << "Move 1: " << move.to_string() << std::endl;
-
+    Move move{0, 0, 0, 0, 0};
+    CHECK(pawnMoves.size() > 1);
     if (pawnMoves.size() > 1) {
       move = pawnMoves[1];
-      std::cout << "Move 2: " << move.to_string() << std::endl;
       if (move.getFromCol() == move.getToCol()) {
         // this is a single-push
       }
+      CHECK(move.getFromCol() + 1 == move.getToCol());
       if (move.getFromCol() + 1 == move.getToCol()) {
         // this should be an en-passant capture on the right
         auto toCol = move.getToCol();  // double-check that this IS the en-passant move
@@ -360,10 +356,8 @@ TEST_CASE("chess::Board") {
     Move move = kingMoves[2];
     if (move.getToCol() == 6) {
       // this move is the castle on the right
-      Board current = Board(game);  // make temp copy of current board state
       game.executeMove(move);
       castleCheck = true;
-      game = current;  // restore board state
     }
   }
   CHECK(castleCheck == true);
