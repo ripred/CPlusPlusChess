@@ -111,7 +111,7 @@ void checkEnPassant(unsigned int side) {
 
   vector<Move> pawnMoves = game.getPawnMoves(fromCol, fromRow);  // get all legal moves for the pawn
 
-  int numPawnMoves = pawnMoves.size();
+  size_t numPawnMoves = pawnMoves.size();
 
   // ensure that 2 moves were found: single-push and en-passant capture
   // (double-push is invalid since pawn has moved)
