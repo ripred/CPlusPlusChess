@@ -461,7 +461,7 @@ vector<Move> Board::getPawnMoves(int col, int row) const {
   int ep1x = col - 1;
   if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
     if (lastMove.getToCol() == ep1x && lastMove.getToRow() == row) {
-      if (abs(lastMove.getFromRow() - lastMove.getToRow()) == 2) {
+      if (abs(lastMove.getFromRow() - lastMove.getToRow()) > 1) {
         if (getType(ep1x + row * 8) == Pawn) {
           addMoveIfValid(moves, col, row, ep1x, row + forward);
         }
@@ -473,7 +473,7 @@ vector<Move> Board::getPawnMoves(int col, int row) const {
   ep1x = col + 1;
   if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
     if (lastMove.getToCol() == ep1x && lastMove.getToRow() == row) {
-      if (abs(lastMove.getFromRow() - lastMove.getToRow()) == 2) {
+      if (abs(lastMove.getFromRow() - lastMove.getToRow()) > 1) {
         if (getType(ep1x + row * 8) == Pawn) {
           addMoveIfValid(moves, col, row, ep1x, row + forward);
         }

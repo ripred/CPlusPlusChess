@@ -68,6 +68,140 @@ TEST_CASE("chess::chessutil") {
 
 #include <iostream>
 
+// ensure en passant moves are generated and tested
+void checkEnPassant(unsigned int side) {
+  using namespace chess;
+  // using std::cout, std::endl;
+
+  Board game;
+
+  // column and row to test en passant move from. changes if white or black
+  int fromCol = 0, fromRow = 0;
+  int toCol = 0, toRow = 0;
+
+  if (side == White) {
+    // cout << "testing White en passant" << endl;
+    fromCol = 3;
+    fromRow = 3;
+    toCol = 4;
+    toRow = 2;
+    game.board[4 + 3 * 8] = game.board[4 + 1 * 8];  // move black pawn
+    game.board[4 + 1 * 8] = Empty;
+    game.board[3 + 3 * 8] = game.board[3 + 6 * 8];  // move white pawn
+    game.board[3 + 6 * 8] = Empty;
+    game.setMoved(4 + 3 * 8, true);  // mark pawns as moved
+    game.setMoved(3 + 3 * 8, true);
+    game.lastMove = Move(4, 1, 4, 3, 0);  // set last move to black move of pawn
+    game.turn = 1;                        // set game to white's turn
+  } else {
+    // cout << "testing Black en passant" << endl;
+    fromCol = 4;
+    fromRow = 3;
+    toCol = 3;
+    toRow = 4;
+    game.board[3 + 3 * 8] = game.board[3 + 6 * 8];  // move white pawn
+    game.board[3 + 6 * 8] = Empty;
+    game.board[4 + 3 * 8] = game.board[4 + 1 * 8];  // move black pawn
+    game.board[4 + 1 * 8] = Empty;
+    game.setMoved(4 + 3 * 8, true);  // mark pawns as moved
+    game.setMoved(3 + 3 * 8, true);
+    game.lastMove = Move(3, 6, 3, 3, 0);  // set last move to white move of pawn
+    game.turn = 0;                        // set game to black's turn
+  }
+
+  vector<Move> pawnMoves = game.getPawnMoves(fromCol, fromRow);  // get all legal moves for the pawn
+
+  int numPawnMoves = pawnMoves.size();
+
+  // ensure that 2 moves were found: single-push and en-passant capture
+  // (double-push is invalid since pawn has moved)
+  CHECK(numPawnMoves == 2);
+  CHECK(numPawnMoves > 0);
+  if (numPawnMoves > 0) {
+    Move move{0, 0, 0, 0, 0};
+    CHECK(numPawnMoves > 1);
+    if (numPawnMoves > 1) {
+      move = pawnMoves[1];
+      if (move.getFromCol() == move.getToCol()) {
+        // this is a single-push
+      }
+      CHECK(toCol == move.getToCol());
+      if (toCol == move.getToCol()) {
+        // this should be an en-passant capture on the right
+        CHECK(move.getValue()
+              != 0);  // the move should capture a piece and so should have some value
+
+        auto numTaken = game.taken2.size();
+        game.executeMove(move);
+        int correctTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
+        CHECK(numTaken + 1 == correctTaken);
+      }
+    }
+  }
+}
+
+void checkCastle(unsigned int side) {
+  using namespace chess;
+
+  // ensure that castling is tested
+  Board game;
+
+  int kingCol = 0;
+  int kingRow = 0;
+
+  if (side == White) {
+    kingCol = 4;
+    kingRow = 7;
+  } else {
+    kingCol = 4;
+    kingRow = 0;
+  }
+
+  vector<Move> kingMoves = game.getKingMoves(kingCol, kingRow);  // king with no moves at start
+  size_t numKingMoves = kingMoves.size();
+  CHECK(numKingMoves == 0);
+
+  // remove pieces between left rook and king
+  game.board[1 + kingRow * 8] = Empty;
+  game.board[2 + kingRow * 8] = Empty;
+  game.board[3 + kingRow * 8] = Empty;
+  kingMoves = game.getKingMoves(4, kingRow);  // king with castling on left possible
+  numKingMoves = kingMoves.size();
+  CHECK(numKingMoves == 2);  // should be 2 moves: castle and move on left
+
+  // ensure that we execute and test castling on the left
+  bool castleCheck = false;
+  if (numKingMoves == 2) {
+    Move move = kingMoves[1];
+    if (move.getToCol() == 2) {
+      // this move is the castle on the left
+      Board current = Board(game);  // make temp copy of current board state
+      game.executeMove(move);
+      castleCheck = true;
+      game = current;  // restore board state
+    }
+  }
+  CHECK(castleCheck == true);
+  castleCheck = false;
+
+  // remove pieces between right rook and king
+  game.board[5 + kingRow * 8] = Empty;
+  game.board[6 + kingRow * 8] = Empty;
+  kingMoves = game.getKingMoves(4, kingRow);  // king with castling on left and right possible
+  numKingMoves = kingMoves.size();
+  CHECK(numKingMoves == 4);  // should be 4 moves: castle and move on left and right
+
+  if (numKingMoves == 4) {
+    Move move = kingMoves[2];
+    if (move.getToCol() == 6) {
+      // this move is the castle on the right
+      game.executeMove(move);
+      castleCheck = true;
+    }
+  }
+  CHECK(castleCheck == true);
+}
+
 TEST_CASE("chess::Board") {
   using namespace chess;
 
@@ -144,6 +278,9 @@ TEST_CASE("chess::Board") {
   // reset board to new game
   game = Board();
 
+  CHECK(game.pieces1.size() == 16);
+  CHECK(game.pieces2.size() == 16);
+
   // test piece moves on default constructor (new game)
 
   // test move primitives
@@ -198,7 +335,7 @@ TEST_CASE("chess::Board") {
   game.addMoveIfValid(moves, 7, 1, 7, 3);  // double push
   CHECK(moves.size() == 16);
 
-  // test valid moves of black knights
+  // test valid moves of black knights  // "it's only a scratch!"
   game.addMoveIfValid(moves, 1, 0, 0, 2);
   CHECK(moves.size() == 17);
   game.addMoveIfValid(moves, 1, 0, 2, 2);
@@ -208,7 +345,7 @@ TEST_CASE("chess::Board") {
   game.addMoveIfValid(moves, 6, 0, 7, 2);
   CHECK(moves.size() == 20);
 
-  // pawns
+  // pawn moves
   CHECK(game.getPawnMoves(0, 1).size() == 2);  // black
   CHECK(game.getPawnMoves(1, 1).size() == 2);
   CHECK(game.getPawnMoves(2, 1).size() == 2);
@@ -226,29 +363,29 @@ TEST_CASE("chess::Board") {
   CHECK(game.getPawnMoves(6, 6).size() == 2);
   CHECK(game.getPawnMoves(7, 6).size() == 2);
 
-  // rooks
+  // rook moves
   CHECK(game.getRookMoves(0, 0).size() == 0);  // black
   CHECK(game.getRookMoves(7, 0).size() == 0);
   CHECK(game.getRookMoves(0, 7).size() == 0);  // white
   CHECK(game.getRookMoves(7, 7).size() == 0);
 
-  // knights
+  // knight moves
   CHECK(game.getKnightMoves(1, 0).size() == 2);  // black
   CHECK(game.getKnightMoves(6, 0).size() == 2);
   CHECK(game.getKnightMoves(1, 7).size() == 2);  // white
   CHECK(game.getKnightMoves(6, 7).size() == 2);
 
-  // bishops
+  // bishop moves
   CHECK(game.getBishopMoves(2, 0).size() == 0);  // black
   CHECK(game.getBishopMoves(5, 0).size() == 0);
   CHECK(game.getBishopMoves(2, 7).size() == 0);  // white
   CHECK(game.getBishopMoves(5, 7).size() == 0);
 
-  // queens
+  // queen moves
   CHECK(game.getQueenMoves(3, 0).size() == 0);  // black
   CHECK(game.getQueenMoves(3, 7).size() == 0);  // white
 
-  // kings
+  // king moves
   CHECK(game.getKingMoves(4, 0).size() == 0);  // black
   CHECK(game.getKingMoves(4, 7).size() == 0);  // white
 
@@ -258,118 +395,39 @@ TEST_CASE("chess::Board") {
 
   // make the first 100 moves (50 successive turns for each side)
   int expectedTurns = 100;
-  bool check4DrawByRepetition = false;
+  bool drawByRepetition = false;
   for (int i = 0; i < 100; i++) {
     if (game.moves1.size() > 0) {
       game.advanceTurn();
       game.executeMove(game.moves1[0]);
-      check4DrawByRepetition = game.checkDrawByRepetition(game.lastMove, 3);
-      if (check4DrawByRepetition) {
+      drawByRepetition = game.checkDrawByRepetition(game.lastMove, 3);
+      if (drawByRepetition) {
         expectedTurns = game.turns;
         break;
       }
     }
   }
-  CHECK(check4DrawByRepetition == true);
+  CHECK(drawByRepetition == true);
 
   // test game history was remembered
   CHECK(game.history.size() == expectedTurns);
 
   // ensure en passant moves are generated and tested
-  game = Board();
-  game.board[4 + 3 * 8] = game.board[4 + 1 * 8];  // move black pawn
-  game.board[4 + 1 * 8] = Empty;
-  game.board[3 + 3 * 8] = game.board[3 + 6 * 8];  // move white pawn
-  game.board[3 + 6 * 8] = Empty;
-  game.setMoved(4 + 3 * 8, true);  // mark pawns as moved
-  game.setMoved(3 + 3 * 8, true);
-  game.lastMove = Move(4, 1, 4, 3, 0);  // set last move to black move of pawn
-  game.turn = 1;                        // set game to white's turn
-
-  vector<Move> pawnMoves = game.getPawnMoves(3, 3);  // get all legal moves for the white pawn
-  // ensure that 2 moves were found: single-push and en-passant capture on right.
-  // (double-push is invalid since white pawn has moved)
-  CHECK(pawnMoves.size() == 2);
-  CHECK(pawnMoves.size() > 0);
-  if (pawnMoves.size() > 0) {
-    Move move{0, 0, 0, 0, 0};
-    CHECK(pawnMoves.size() > 1);
-    if (pawnMoves.size() > 1) {
-      move = pawnMoves[1];
-      if (move.getFromCol() == move.getToCol()) {
-        // this is a single-push
-      }
-      CHECK(move.getFromCol() + 1 == move.getToCol());
-      if (move.getFromCol() + 1 == move.getToCol()) {
-        // this should be an en-passant capture on the right
-        auto toCol = move.getToCol();  // double-check that this IS the en-passant move
-        auto toRow = move.getToRow();
-        CHECK(toCol == 4);
-        CHECK(toRow == 2);
-        CHECK(move.getValue()
-              != 0);  // the move should capture a piece and so should have some value
-
-        auto numTaken = game.taken2.size();
-        game.executeMove(move);
-        CHECK(game.taken2.size() == numTaken + 1);
-      }
-    }
-  }
+  checkEnPassant(White);
+  checkEnPassant(Black);
 
   // ensure that castling is tested
-  game = Board();
-  vector<Move> kingMoves = game.getKingMoves(4, 0);  // black king with no moves at start
-  size_t numKingMoves = kingMoves.size();
-  CHECK(numKingMoves == 0);
+  checkCastle(White);
+  checkCastle(Black);
 
-  // remove pieces between left rook and king
-  game.board[1 + 0 * 8] = Empty;
-  game.board[2 + 0 * 8] = Empty;
-  game.board[3 + 0 * 8] = Empty;
-  kingMoves = game.getKingMoves(4, 0);  // black king with castling on left possible
-  numKingMoves = kingMoves.size();
-  CHECK(numKingMoves == 2);  // should be 2 moves: castle and move on left
-
-  // ensure that we execute and test castling on the left
-  bool castleCheck = false;
-  if (numKingMoves == 2) {
-    Move move = kingMoves[1];
-    if (move.getToCol() == 2) {
-      // this move is the castle on the left
-      Board current = Board(game);  // make temp copy of current board state
-      game.executeMove(move);
-      castleCheck = true;
-      game = current;  // restore board state
-    }
-  }
-  CHECK(castleCheck == true);
-  castleCheck = false;
-
-  // remove pieces between right rook and king
-  game.board[5 + 0 * 8] = Empty;
-  game.board[6 + 0 * 8] = Empty;
-  kingMoves = game.getKingMoves(4, 0);  // black king with castling on left and right possible
-  numKingMoves = kingMoves.size();
-  CHECK(numKingMoves == 4);  // should be 4 moves: castle and move on left and right
-
-  if (numKingMoves == 4) {
-    Move move = kingMoves[2];
-    if (move.getToCol() == 6) {
-      // this move is the castle on the right
-      game.executeMove(move);
-      castleCheck = true;
-    }
-  }
-  CHECK(castleCheck == true);
-
-  std::cout << std::endl;
-  std::cout << "Turn: " << std::to_string(game.turns) << " ";
-  std::cout << game.lastMove.to_string() << std::endl;
-  lines = game.to_string(game);
-  for (auto line : lines) {
-    std::cout << line << std::endl;
-  }
-  std::cout << std::endl;
+  //  std::cout << std::endl;
+  //  std::cout << "Turn: " << std::to_string(game.turns) << " ";
+  //  std::cout << game.lastMove.to_string() << std::endl;
+  //  lines = game.to_string(game);
+  //  for (auto line : lines) {
+  //    std::cout << line << std::endl;
+  //  }
+  //  std::cout << std::endl;
 }
 
 TEST_CASE("chess::Move") {
