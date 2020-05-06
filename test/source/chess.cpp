@@ -144,7 +144,7 @@ void checkEnPassant(unsigned int side) {
 
         auto numTaken = game.taken2.size();
         game.executeMove(move);
-        int correctTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
+        size_t correctTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
         CHECK(numTaken + 1 == correctTaken);
       }
     }
