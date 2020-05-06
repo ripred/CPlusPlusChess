@@ -126,6 +126,7 @@ void checkEnPassant(unsigned int side) {
         // this is a single-push
       }
       CHECK(toCol == move.getToCol());
+      CHECK(toRow == move.getToRow());
       if (toCol == move.getToCol()) {
         // this should be an en-passant capture on the right
         CHECK(move.getValue()
