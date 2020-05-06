@@ -193,6 +193,7 @@ void Board::executeMove(Move const& move) {
     }
   }
 
+  unsigned int fromSide = getSide(fi);
   board[ti] = board[fi];
   board[fi] = makeSpot(Empty, Black, false, false);
   setMoved(ti, true);
@@ -215,11 +216,10 @@ void Board::executeMove(Move const& move) {
       board[rfi] = makeSpot(Empty, Black, false, false);
     }
 
-    if (getSide(fi) == Black)
+    if (fromSide == Black)
       blkKingLoc = ti;
     else
       whtKingLoc = ti;
-
   } else if (type == Pawn) {
     if (ty == 0 || ty == 7) {
       setType(ti, Queen);
