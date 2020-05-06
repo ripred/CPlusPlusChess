@@ -9,9 +9,24 @@
 #include <chessutil.h>
 #include <move.h>
 
-TEST_CASE("chess::chessutil") {
-  using namespace chess;
+#include <iostream>
+#include <string>
 
+using namespace chess;
+
+void showBoard(Board& game) {
+  using std::cout, std::endl;
+  cout << endl;
+  cout << "Turn: " << std::to_string(game.turns) << " ";
+  cout << game.lastMove.to_string() << endl;
+  vector<std::string> lines = game.to_string(game);
+  for (auto line : lines) {
+    cout << line << endl;
+  }
+  cout << endl;
+}
+
+TEST_CASE("chess::chessutil") {
   int const whitePawn = makeSpot(Pawn, White, false, false);
   int const blackPawn = makeSpot(Pawn, Black, false, false);
   int const movedWhitePawn = setCheck(setMoved(whitePawn, true), true);
@@ -66,13 +81,8 @@ TEST_CASE("chess::chessutil") {
   CHECK(setMoved(setSide(setType(Empty, Pawn), Black), true) == (Moved | Pawn));
 }
 
-#include <iostream>
-
 // ensure en passant moves are generated and tested
 void checkEnPassant(unsigned int side) {
-  using namespace chess;
-  // using std::cout, std::endl;
-
   Board game;
 
   // column and row to test en passant move from. changes if white or black
@@ -141,10 +151,8 @@ void checkEnPassant(unsigned int side) {
   }
 }
 
+// ensure that castling is tested
 void checkCastle(unsigned int side) {
-  using namespace chess;
-
-  // ensure that castling is tested
   Board game;
 
   int kingCol = 0;
@@ -204,8 +212,6 @@ void checkCastle(unsigned int side) {
 }
 
 TEST_CASE("chess::Board") {
-  using namespace chess;
-
   // test default constructor
   Board game;
 
@@ -421,19 +427,24 @@ TEST_CASE("chess::Board") {
   checkCastle(White);
   checkCastle(Black);
 
-  //  std::cout << std::endl;
-  //  std::cout << "Turn: " << std::to_string(game.turns) << " ";
-  //  std::cout << game.lastMove.to_string() << std::endl;
-  //  lines = game.to_string(game);
-  //  for (auto line : lines) {
-  //    std::cout << line << std::endl;
-  //  }
-  //  std::cout << std::endl;
+  using std::cout, std::endl;
+
+  game = Board();
+
+  // attempt to add an illegal en passant capture to a move list. This should be stopped by
+  // addIfValid(...)
+  vector<Move> moveList{};
+
+  game.addMoveIfValid(moveList, 4, 1, 3, 2);  // black pawn
+  // check that the add did not succeed
+  CHECK(moveList.size() == 0);
+
+  game.addMoveIfValid(moveList, 3, 6, 4, 5);  // white pawn
+  // check that the add did not succeed
+  CHECK(moveList.size() == 0);
 }
 
 TEST_CASE("chess::Move") {
-  using namespace chess;
-
   Move move1(1, 2, 3, 4, 1000);
 
   CHECK(move1.getFromCol() == 1);
