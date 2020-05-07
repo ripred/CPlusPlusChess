@@ -510,8 +510,10 @@ TEST_CASE("chess::Minimax") {
     bits = Empty;
   }
 
-  game.board[4 + 4 * 8] = makeSpot(Pawn, White, false, false);
   game.turn = White;
+  Board blank(game);  // keep copy of blank board for re-use
+
+  game.board[4 + 4 * 8] = makeSpot(Pawn, White, false, false);
   game.generateMoveLists();
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
@@ -564,4 +566,60 @@ TEST_CASE("chess::Minimax") {
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 8);
   CHECK(agent.movesProcessed == 8);
+
+  game = Board(blank);  // restore blank board
+  game.board[4 + 0 * 8] = makeSpot(King, Black, false, false);
+  game.board[4 + 7 * 8] = makeSpot(King, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  agent = Minimax(1);  // change agent to go to a ply depth of 1
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 5);
+  CHECK(game.moves2.size() == 5);
+  CHECK(agent.movesProcessed == 30);
+
+  agent = Minimax(2);  // change agent to go to a ply depth of 2
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 5);
+  CHECK(game.moves2.size() == 5);
+  CHECK(agent.movesProcessed == 84);
+
+  game = Board(blank);  // restore blank board
+  // set up black king in corner with only 1 legal move
+  game.board[0 + 0 * 8] = makeSpot(King, Black, true, false);
+  game.board[0 + 7 * 8] = makeSpot(Queen, White, true, false);
+  game.board[1 + 1 * 8] = makeSpot(Bishop, White, true, false);
+  game.board[1 + 7 * 8] = makeSpot(Rook, White, true, false);
+  game.board[2 + 7 * 8] = makeSpot(Rook, White, true, false);
+  game.turn = Black;
+  game.generateMoveLists();
+  agent = Minimax(0);  // change agent to go to a ply depth of 0
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 1);
+  CHECK(game.moves2.size() == 40);
+  CHECK(agent.movesProcessed == 1);
+
+  // execute the black king move
+  game.executeMove(move);
+  game.advanceTurn();
+  cout << "Black moved: " << move.to_string() << endl;
+
+  // White can checkmate by moving from 0,7 to 0,0 (a1 to a8)
+  agent = Minimax(1);  // change agent to go to a ply depth of 1
+  move = Move(0, 7, 0, 0, 0);
+  // execute the white queen move
+  cout << "White moved: " << move.to_string() << endl;
+  game.executeMove(move);
+  game.advanceTurn();
+
+  // ensure that black has no more legal moves
+  move = agent.bestMove(game);
+  CHECK(game.moves1.empty() == true);
+  CHECK(game.moves2.size() == 34);
+  CHECK(game.kingInCheck(Black) == true);
+  CHECK(game.kingInCheck(White) == false);
 }
