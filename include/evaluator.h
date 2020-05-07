@@ -34,9 +34,9 @@ namespace chess {
       return (dx + dy) * type * ((getSide(p) == Black) ? -1 : 1);
     }
 
-    static int evaluate(Board& board) { return evaluate(board, MATERIAL | CENTER | MOBILE); }
+    static int evaluate(Board const& board) { return evaluate(board, MATERIAL | CENTER | MOBILE); }
 
-    static int evaluate(Board& board, int with) {
+    static int evaluate(Board const& board, int with) {
       int score = 0;
 
       int mobilityBonus = 3;

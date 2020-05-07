@@ -5,8 +5,11 @@
 #  include <sstream>
 #endif
 
+#include <bestmove.h>
 #include <board.h>
 #include <chessutil.h>
+#include <evaluator.h>
+#include <minimax.h>
 #include <move.h>
 
 #include <iostream>
@@ -17,7 +20,7 @@ using namespace chess;
 void showBoard(Board& game) {
   using std::cout, std::endl;
   cout << endl;
-  cout << "Turn: " << std::to_string(game.turns) << " ";
+  cout << "Turn: " << game.turns << " ";
   cout << game.lastMove.to_string() << endl;
   vector<std::string> lines = game.to_string(game);
   for (auto line : lines) {
@@ -90,7 +93,6 @@ void checkEnPassant(unsigned int side) {
   int toCol = 0, toRow = 0;
 
   if (side == White) {
-    // cout << "testing White en passant" << endl;
     fromCol = 3;
     fromRow = 3;
     toCol = 4;
@@ -104,7 +106,6 @@ void checkEnPassant(unsigned int side) {
     game.lastMove = Move(4, 1, 4, 3, 0);  // set last move to black move of pawn
     game.turn = 1;                        // set game to white's turn
   } else {
-    // cout << "testing Black en passant" << endl;
     fromCol = 4;
     fromRow = 3;
     toCol = 3;

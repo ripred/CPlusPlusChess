@@ -1,8 +1,4 @@
-#include <bestmove.h>
-#include <board.h>
-#include <chessutil.h>
 #include <minimax.h>
-#include <move.h>
 
 #include <algorithm>
 #include <iostream>
@@ -15,11 +11,10 @@ using std::string;
 using namespace chess;
 
 static void playGame(Board& board, Minimax& agent);
-static Move getNextPlayersMove(Board& board, Minimax& agent);
 static void showBoard(Board& board);
 
 int main(int argc, char** argv) {
-  int maxDepth = 3;
+  int maxDepth = 0;
 
   Board board;
   Minimax agent(maxDepth);
@@ -29,9 +24,16 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-static void showBoard(Board& board) {
+static void showBoard(Board& board, Minimax const& agent) {
+  static string const names[]
+      = {"", "Pawn   ", "Rook   ", "Knight  ", "Bishop ", "Queen  ", "King   "};
+  cout << endl;
   if (board.lastMove.isValid()) {
-    cout << "Last: " << board.lastMove.to_string() << endl;
+    string player = board.turn == White ? " White " : " Black ";
+    string piece = names[board.getType(board.lastMove.getTo())];
+    cout << "Turn: " << (board.turns + 1);
+    cout << player << piece << board.lastMove.to_string();
+    cout << " " << agent.movesProcessed << " examined" << endl;
   }
   auto lines = board.to_string(board);
   for_each(begin(lines), end(lines), [](auto const& line) { cout << line << endl; });
@@ -40,19 +42,18 @@ static void showBoard(Board& board) {
 static void playGame(Board& board, Minimax& agent) {
   static int const maxRepetitions = 3;
 
-  cout << endl;
-  showBoard(board);
+  showBoard(board, agent);
 
-  Move move = getNextPlayersMove(board, agent);
+  Move move = agent.bestMove(board);
 
   while (move.isValid()) {
+    if (board.checkDrawByRepetition(move, maxRepetitions)) break;
     board.executeMove(move);
     board.advanceTurn();
 
-    cout << endl;
-    showBoard(board);
+    showBoard(board, agent);
 
-    move = getNextPlayersMove(board, agent);
+    move = agent.bestMove(board);
   }
 
   if (board.checkDrawByRepetition(move, maxRepetitions)) {
@@ -63,10 +64,4 @@ static void playGame(Board& board, Minimax& agent) {
     cout << "Checkmate!" << endl;
     cout << "Player " << std::to_string((board.turn % 2) + 1) << " wins!" << endl;
   }
-}
-
-static Move getNextPlayersMove(Board& board, Minimax& agent) {
-  Move move = agent.bestMove(board);
-
-  return move;
 }

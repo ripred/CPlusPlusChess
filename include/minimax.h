@@ -27,19 +27,24 @@ typedef vector<Bits> PieceList;
 typedef map<Bits, PieceList> SidePieceMap;
 typedef map<Bits, SidePieceMap> PieceMap;
 
+#include <iostream>
+using std::cout, std::endl;
+
 class Minimax {
 public:
   int maxDepth;
+  int qMaxDepth;
   BestMove best;
-  bool maximize;
   long movesProcessed;
 
-  explicit Minimax(int max_depth = 3)
-      : maxDepth(max_depth), best(true), maximize(true), movesProcessed(0L) {}
+  explicit Minimax(int max_depth = 0) : best(true) {
+    maxDepth = max_depth;
+    qMaxDepth = 0;
+    movesProcessed = 0L;
+  }
 
-  Move bestMove(Board& board) {
-    unsigned int const side = board.turn;
-    maximize = (side == White);
+  Move bestMove(Board const& board) {
+    bool maximize = (board.turn == White);
     best = BestMove(maximize);
     movesProcessed = 0L;
 
@@ -54,14 +59,17 @@ public:
     }
 
     PieceMap pieceMap;
-    for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-      if (board.isEmpty(ndx)) continue;
-      Bits bits = board.board[ndx];
-      pieceMap[getSide(bits)][getType(bits)].push_back(ndx);
+
+    if (false) {
+      for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
+        if (board.isEmpty(ndx)) continue;
+        Bits bits = board.board[ndx];
+        pieceMap[getSide(bits)][getType(bits)].push_back(ndx);
+      }
     }
 
     // no-thread version implemented first
-    return searchWithNoThreads(board, pieceMap);
+    return searchWithNoThreads(board, maximize, pieceMap);
   }
 
   /**
@@ -70,15 +78,15 @@ public:
    *
    * @param board the board state to examine each move on
    * @param pieceMap board pieces mapped by type and side
-   * @return the best move for this board or null if no legal move is available
+   * @return the best move for this board
    */
-  Move searchWithNoThreads(Board& board, PieceMap& pieceMap) {
+  Move searchWithNoThreads(Board const& board, bool maximize, PieceMap& pieceMap) {
     // We are not using threads.
     // Walk through all moves and find the best and return it in this calling thread.
 
     UNUSED(pieceMap);
 
-    for (Move& move : board.moves1) {
+    for (Move const& move : board.moves1) {
       Board currentBoard(board);
       currentBoard.executeMove(move);
       currentBoard.advanceTurn();
@@ -102,7 +110,7 @@ public:
    * @param origBoard the board state to examine all moves for
    * @param alpha     the lower bounds of the best move and score found so far
    * @param beta      the upper bounds of the best move and score found so far
-   * @param depth     the number of turns to search ahead.  ply is a "half-turn'
+   * @param depth     the number of plies to search ahead.  Ply is a 'half-turn'
    *                  where one player has moved but the responding move has not
    *                  been made.  A full turn for fair evaluation usually requires
    *                  a balanced number of exchanges.
@@ -112,11 +120,11 @@ public:
    * @return the best score this move (and all consequential response/exchanges up to the allowed
    *         look-ahead depth or time limit for searching).
    */
-  int minmax(Board& origBoard, int alpha, int beta, int depth, bool maximize) {
+  int minmax(Board const& origBoard, int alpha, int beta, int depth, bool maximize) {
     BestMove mmBest(maximize);
     int lookAheadValue = 0;
 
-    for (Move& move : origBoard.moves1) {
+    for (Move const& move : origBoard.moves1) {
       ///////////////////////////////////////////////////////////////////
       // See if we are at the end of our allowed depth to search and if so,
       // continue search if we still have made capture moves that we want to
@@ -126,10 +134,9 @@ public:
       // This is known as quiescent searching.
 
       if (depth <= 0) {
-        if ((move.getValue() == 0) || depth < -2) {
+        if ((move.getValue() == 0) || depth <= qMaxDepth) {
           movesProcessed += mmBest.movesExamined;
-          Evaluator ev;
-          return ev.evaluate(origBoard);
+          return Evaluator::evaluate(origBoard);
         }
       }
 
