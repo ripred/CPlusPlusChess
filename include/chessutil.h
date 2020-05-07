@@ -18,7 +18,7 @@ namespace chess {
 
   // Masks
   static unsigned int const Type = 0x07;
-  static unsigned int const Unused = 0x88;
+  // static unsigned int const Unused = 0x88;
   static unsigned int const Side = 0x10;
   static unsigned int const Moved = 0x20;
   static unsigned int const Check = 0x40;
@@ -30,7 +30,7 @@ namespace chess {
   static unsigned int const Rook = 4;
   static unsigned int const Queen = 5;
   static unsigned int const King = 6;
-  static unsigned int const Marker = 7;
+  // static unsigned int const Marker = 7;
 
   unsigned int getType(unsigned int b);
 

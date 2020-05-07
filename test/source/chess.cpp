@@ -474,4 +474,9 @@ TEST_CASE("chess::Move") {
 
   string correct = "[Move from 1,2 to 3,4 (b6 to d4) value:2000]";
   CHECK(move1.to_string() == correct);
+
+  move1 = Move();
+  CHECK(move1.isValid() == false);
+  move1 = Move(4, 1, 4, 2, 0);
+  CHECK(move1.isValid() == true);
 }

@@ -19,20 +19,24 @@ namespace chess {
     int value;
 
   public:
+    Move();
     Move(int fromCol, int fromRow, int toCol, int toRow, int value);
     Move(Move const& ref);
 
-    int getFromCol() const;
-    int getFromRow() const;
-    int getToCol() const;
-    int getToRow() const;
-    int getFrom() const;
-    int getTo() const;
-    int getValue() const;
+    [[nodiscard]] int getFromCol() const;
+    [[nodiscard]] int getFromRow() const;
+    [[nodiscard]] int getToCol() const;
+    [[nodiscard]] int getToRow() const;
+    [[nodiscard]] int getFrom() const;
+    [[nodiscard]] int getTo() const;
+    [[nodiscard]] int getValue() const;
+
     void setValue(int value);
 
     bool operator==(Move const& move) const;
 
-    string to_string() const;
+    [[nodiscard]] bool isValid() const { return from != to; }
+
+    [[nodiscard]] string to_string() const;
   };
 }  // namespace chess
