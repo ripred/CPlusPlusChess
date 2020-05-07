@@ -481,3 +481,12 @@ TEST_CASE("chess::Move") {
   move1 = Move(4, 1, 4, 2, 0);
   CHECK(move1.isValid() == true);
 }
+
+TEST_CASE("chess::minimax") {
+  Board game;
+  Minimax agent(0);
+
+  Move move = agent.bestMove(game);
+
+  CHECK(move.isValid() == true);
+}

@@ -90,6 +90,7 @@ public:
       Board currentBoard(board);
       currentBoard.executeMove(move);
       currentBoard.advanceTurn();
+      movesProcessed++;
 
       int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
 
