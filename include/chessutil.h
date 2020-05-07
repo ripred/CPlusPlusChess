@@ -5,6 +5,11 @@
 
 #pragma once
 
+#define UNUSED(a) \
+  do {            \
+    (void)(a);    \
+  } while (0);
+
 namespace chess {
 
   static int const BOARD_SIZE = 64;
