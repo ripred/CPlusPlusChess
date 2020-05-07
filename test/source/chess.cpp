@@ -482,7 +482,22 @@ TEST_CASE("chess::Move") {
   CHECK(move1.isValid() == true);
 }
 
-TEST_CASE("chess::minimax") {
+TEST_CASE("chess::BestMove") {
+  BestMove best(true);
+  CHECK(best.value == MIN_VALUE);
+
+  best = BestMove(false);
+  CHECK(best.value == MAX_VALUE);
+
+  Move const move(1, 2, 3, 4, 42);
+  best = BestMove(move, 7);
+  CHECK(best.value == 7);
+  CHECK(best.move.getValue() == 7);
+  CHECK(best.move.getFrom() == 1 + 2 * 8);
+  CHECK(best.move.getTo() == 3 + 4 * 8);
+}
+
+TEST_CASE("chess::Minimax") {
   Board game;
   Minimax agent(0);
 
