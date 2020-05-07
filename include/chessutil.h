@@ -57,5 +57,6 @@ namespace chess {
 
   unsigned int setCheck(unsigned int b, bool inCheck);
 
-  unsigned int makeSpot(unsigned int type, unsigned int side, bool moved, bool inCheck);
+  unsigned int makeSpot(unsigned int type, unsigned int side, bool moved = false,
+                        bool inCheck = false);
 }  // namespace chess

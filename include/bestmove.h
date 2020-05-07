@@ -18,7 +18,6 @@ public:
   int value;
   int movesExamined;
 
-  explicit BestMove(bool maximize) : movesExamined(0) {
-    value = maximize ? chess::MIN_VALUE : chess::MAX_VALUE;
-  }
+  explicit BestMove(bool maximize);
+  BestMove(Move const& m, int val);
 };

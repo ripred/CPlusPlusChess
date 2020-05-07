@@ -484,9 +484,69 @@ TEST_CASE("chess::Move") {
 
 TEST_CASE("chess::minimax") {
   Board game;
-  Minimax agent(1);
+  Minimax agent(0);
 
   Move move = agent.bestMove(game);
 
   CHECK(move.isValid() == true);
+  CHECK(agent.movesProcessed == 20);
+
+  for (Bits& bits : game.board) {
+    bits = Empty;
+  }
+
+  game.board[4 + 4 * 8] = makeSpot(Pawn, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 2);
+  CHECK(agent.movesProcessed == 2);
+
+  game.setMoved(4 + 4 * 8, true);
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 1);
+  CHECK(agent.movesProcessed == 1);
+
+  game.board[4 + 4 * 8] = makeSpot(Rook, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 14);
+  CHECK(agent.movesProcessed == 14);
+
+  game.board[4 + 4 * 8] = makeSpot(Knight, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 8);
+  CHECK(agent.movesProcessed == 8);
+
+  game.board[4 + 4 * 8] = makeSpot(Bishop, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 13);
+  CHECK(agent.movesProcessed == 13);
+
+  game.board[4 + 4 * 8] = makeSpot(Queen, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 27);
+  CHECK(agent.movesProcessed == 27);
+
+  game.board[4 + 4 * 8] = makeSpot(King, White, false, false);
+  game.turn = White;
+  game.generateMoveLists();
+  move = agent.bestMove(game);
+  CHECK(move.isValid() == true);
+  CHECK(game.moves1.size() == 8);
+  CHECK(agent.movesProcessed == 8);
 }
