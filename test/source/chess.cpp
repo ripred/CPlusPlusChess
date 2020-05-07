@@ -610,9 +610,9 @@ TEST_CASE("chess::Minimax") {
 
   // White can checkmate by moving from 0,7 to 0,0 (a1 to a8)
   agent = Minimax(1);  // change agent to go to a ply depth of 1
-                       // move = Move(0, 7, 0, 0, 0);
+  move = Move(0, 7, 0, 0, 0);
   // execute the white queen move
-  move = agent.bestMove(game);
+  // move = agent.bestMove(game);
   cout << "White moved: " << move.to_string() << endl;
   game.executeMove(move);
   game.advanceTurn();
@@ -620,7 +620,7 @@ TEST_CASE("chess::Minimax") {
   // ensure that black has no more legal moves
   move = agent.bestMove(game);
   CHECK(game.moves1.empty() == true);
-  CHECK(game.moves2.size() == 39);
+  CHECK(game.moves2.size() == 34);
   CHECK(game.kingInCheck(Black) == true);
   CHECK(game.kingInCheck(White) == false);
 }
