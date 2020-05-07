@@ -484,7 +484,7 @@ TEST_CASE("chess::Move") {
 
 TEST_CASE("chess::minimax") {
   Board game;
-  Minimax agent(0);
+  Minimax agent(1);
 
   Move move = agent.bestMove(game);
 
