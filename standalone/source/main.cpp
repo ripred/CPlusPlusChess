@@ -1,7 +1,7 @@
-#include <chessutil.h>
 #include <bestmove.h>
-#include <minimax.h>
 #include <board.h>
+#include <chessutil.h>
+#include <minimax.h>
 #include <move.h>
 
 #include <algorithm>
