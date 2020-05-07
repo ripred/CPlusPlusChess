@@ -613,7 +613,8 @@ TEST_CASE("chess::Minimax") {
   move = Move(0, 7, 0, 0, 0);
   // execute the white queen move
   // move = agent.bestMove(game);
-  cout << "White moved: " << move.to_string() << endl;
+  Move move2 = agent.bestMove(game);
+  cout << "White coverage test: " << move2.to_string() << endl;
   game.executeMove(move);
   game.advanceTurn();
 
