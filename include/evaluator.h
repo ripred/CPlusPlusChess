@@ -56,8 +56,8 @@ namespace chess {
         if (with & MOBILE) {
           int factor = (board.turn == Black) ? -1 : 1;
 
-          score += board.moves1.size() * mobilityBonus * factor;
-          score -= board.moves2.size() * mobilityBonus * factor;
+          score += static_cast<int>(board.moves1.size()) * mobilityBonus * factor;
+          score -= static_cast<int>(board.moves2.size()) * mobilityBonus * factor;
         }
       }
       return score;
