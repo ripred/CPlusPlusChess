@@ -47,7 +47,7 @@ static void showBoard(Board& board, Minimax const& agent) {
     string piece = names[board.getType(board.lastMove.getTo())];
     cout << "Turn: " << (board.turns + 1) << " ";
     cout << board.lastMove.to_string(0b110) << " " << player << piece << " ";
-    cout << agent.movesProcessed << " examined" << endl;
+    cout << agent.movesExamined << " examined" << endl;
   }
   auto lines = board.to_string(board);
   for_each(begin(lines), end(lines), [](auto const& line) { cout << line << endl; });
