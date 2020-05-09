@@ -11,18 +11,18 @@ using namespace chess;
 Minimax::Minimax(int max_depth) : best(true) {
   maxDepth = max_depth;
   qMaxDepth = 0;
-  movesProcessed = 0L;
+  movesExamined = 0L;
 }
 
 Move Minimax::bestMove(Board const& board) {
   bool maximize = (board.turn == White);
   best = BestMove(maximize);
-  movesProcessed = 0L;
+  movesExamined = 0L;
 
   if (board.moves1.size() == 1) {
     best.move = board.moves1[0];
     best.value = best.move.getValue();
-    movesProcessed = 1L;
+    movesExamined = 1L;
     return best.move;
   }
 
@@ -96,7 +96,7 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
     Board currentBoard(board);
     currentBoard.executeMove(move);
     currentBoard.advanceTurn();
-    movesProcessed++;
+    movesExamined++;
 
     int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
 
@@ -162,7 +162,7 @@ int Minimax::minmax(Board const& origBoard, int alpha, int beta, int depth, bool
 
     if (depth <= 0) {
       if ((move.getValue() == 0) || depth <= qMaxDepth) {
-        movesProcessed += mmBest.movesExamined;
+        movesExamined += mmBest.movesExamined;
         return Evaluator::evaluate(origBoard);
       }
     }
@@ -206,7 +206,7 @@ int Minimax::minmax(Board const& origBoard, int alpha, int beta, int depth, bool
     }
   }
 
-  movesProcessed += mmBest.movesExamined;
+  movesExamined += mmBest.movesExamined;
 
   return mmBest.value;
 }

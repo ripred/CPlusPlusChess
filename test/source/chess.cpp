@@ -443,6 +443,36 @@ TEST_CASE("chess::Board") {
   game.addMoveIfValid(moveList, 3, 6, 4, 5);  // white pawn
   // check that the add did not succeed
   CHECK(moveList.size() == 0);
+
+  // check that pawns are promoted to queens on back row
+  game = Board();
+  for (auto& ref : game.board) ref = Empty;
+
+  game.board[4 + 1 * 8] = makeSpot(Pawn, Black);
+  Move move = Move{4, 1, 4, 0, 0};
+  game.executeMove(move);
+  CHECK(game.getType(4 + 0 * 8) == Queen);
+
+  game.board[4 + 6 * 8] = makeSpot(Pawn, White);
+  move = Move{4, 6, 4, 7, 0};
+  game.executeMove(move);
+  CHECK(game.getType(4 + 7 * 8) == Queen);
+
+  // test that move returned immediately if it leaves opponent with no moves
+  Minimax agent(0);
+  game.turn = White;
+  move = agent.bestMove(game);
+  long movesExamined = agent.movesExamined;
+  CHECK(movesExamined > 1);
+
+  // remove the only piece the other side has leaving it with no moves
+  game.board[4 + 0 * 8] = Empty;
+  game.turn = White;
+  game.generateMoveLists();
+  CHECK(game.moves2.empty() == true);
+  game.turn = White;
+  move = agent.bestMove(game);
+  CHECK(agent.movesExamined > movesExamined);
 }
 
 TEST_CASE("chess::Move") {
@@ -504,7 +534,7 @@ TEST_CASE("chess::Minimax") {
   Move move = agent.bestMove(game);
 
   CHECK(move.isValid() == true);
-  CHECK(agent.movesProcessed == 20);
+  CHECK(agent.movesExamined == 20);
 
   for (Bits& bits : game.board) {
     bits = Empty;
@@ -518,14 +548,14 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 2);
-  CHECK(agent.movesProcessed == 2);
+  CHECK(agent.movesExamined == 2);
 
   game.setMoved(4 + 4 * 8, true);
   game.generateMoveLists();
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 1);
-  CHECK(agent.movesProcessed == 1);
+  CHECK(agent.movesExamined == 1);
 
   game.board[4 + 4 * 8] = makeSpot(Rook, White, false, false);
   game.turn = White;
@@ -533,7 +563,7 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 14);
-  CHECK(agent.movesProcessed == 14);
+  CHECK(agent.movesExamined == 14);
 
   game.board[4 + 4 * 8] = makeSpot(Knight, White, false, false);
   game.turn = White;
@@ -541,7 +571,7 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 8);
-  CHECK(agent.movesProcessed == 8);
+  CHECK(agent.movesExamined == 8);
 
   game.board[4 + 4 * 8] = makeSpot(Bishop, White, false, false);
   game.turn = White;
@@ -549,7 +579,7 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 13);
-  CHECK(agent.movesProcessed == 13);
+  CHECK(agent.movesExamined == 13);
 
   game.board[4 + 4 * 8] = makeSpot(Queen, White, false, false);
   game.turn = White;
@@ -557,7 +587,7 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 27);
-  CHECK(agent.movesProcessed == 27);
+  CHECK(agent.movesExamined == 27);
 
   game.board[4 + 4 * 8] = makeSpot(King, White, false, false);
   game.turn = White;
@@ -565,7 +595,7 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 8);
-  CHECK(agent.movesProcessed == 8);
+  CHECK(agent.movesExamined == 8);
 
   game = Board(blank);  // restore blank board
   game.board[4 + 0 * 8] = makeSpot(King, Black, false, false);
@@ -577,7 +607,7 @@ TEST_CASE("chess::Minimax") {
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 5);
   CHECK(game.moves2.size() == 5);
-  CHECK(agent.movesProcessed == 30);
+  CHECK(agent.movesExamined == 30);
 
   agent = Minimax(2);  // change agent to go to a ply depth of 2
   game.generateMoveLists();
@@ -585,7 +615,7 @@ TEST_CASE("chess::Minimax") {
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 5);
   CHECK(game.moves2.size() == 5);
-  CHECK(agent.movesProcessed == 84);
+  CHECK(agent.movesExamined == 84);
 
   game = Board(blank);  // restore blank board
   // set up black king in corner with only 1 legal move
@@ -601,7 +631,7 @@ TEST_CASE("chess::Minimax") {
   CHECK(move.isValid() == true);
   CHECK(game.moves1.size() == 1);
   CHECK(game.moves2.size() == 40);
-  CHECK(agent.movesProcessed == 1);
+  CHECK(agent.movesExamined == 1);
 
   // execute the black king move
   game.executeMove(move);
