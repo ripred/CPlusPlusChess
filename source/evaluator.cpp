@@ -14,15 +14,12 @@ int Evaluator::materialEvaluator(unsigned int p) {
 // center location bonus
 int Evaluator::centerEvaluator(int ndx, unsigned int p) {
   unsigned int type = getType(p);
-  if (type == King)
-          return 0;
+  if (type == King) return 0;
 
   int dx = ndx % 8;
-  if (dx > 3)
-          dx = 7 - dx;
+  if (dx > 3) dx = 7 - dx;
   int dy = ndx / 8;
-  if (dy > 3)
-          dy = 7 - dy;
+  if (dy > 3) dy = 7 - dy;
 
   return (dx + dy) * type * ((getSide(p) == Black) ? -1 : 1);
 }

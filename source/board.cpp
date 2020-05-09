@@ -129,14 +129,12 @@ void Board::generateMoveLists() {
 bool Board::checkDrawByRepetition(Move const& move, int const maxRepetitions) const {
   // Check for draw-by-repetition (same made too many times in a row by a player)
   size_t need = static_cast<int>(pow(2.0, (maxRepetitions + 1)));
-  if (history.size() < need)
-          return false;
+  if (history.size() < need) return false;
   int count = 0;
   for (auto i = history.size() - need; i < history.size(); i++) {
     if (history[i] == move) {
       count++;
-      if (count >= maxRepetitions)
-              return true;
+      if (count >= maxRepetitions) return true;
     }
   }
   return false;
@@ -154,8 +152,7 @@ bool Board::kingInCheck(unsigned int const side) {
   vector<Move> opponentMoves = getMoves(otherSide, false);
 
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-    if (getType(ndx) != King || getSide(ndx) != side)
-            continue;
+    if (getType(ndx) != King || getSide(ndx) != side) continue;
     for (Move& move : opponentMoves) {
       if (move.getTo() == ndx) {
         return true;
@@ -290,8 +287,7 @@ vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
   vector<unsigned int> pieces;
 
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-    if (isEmpty(ndx) || getSide(ndx) != side)
-            continue;
+    if (isEmpty(ndx) || getSide(ndx) != side) continue;
 
     // add piece to list of pieces for this side
     unsigned int b = board[ndx];
@@ -513,8 +509,7 @@ bool Board::addSlider(vector<Move>& moves, int col, int row, int x, int y) const
     return false;
   }
   if (!isEmpty(x + y * 8)) {
-    if (getSide(col + row * 8) == getSide(x + y * 8))
-            return false;
+    if (getSide(col + row * 8) == getSide(x + y * 8)) return false;
     addMoveIfValid(moves, col, row, x, y);
     return false;
   }
@@ -536,26 +531,22 @@ vector<Move> Board::getRookMoves(int col, int row) const {
   for (int offset = 1; offset <= 7; offset++) {
     int x = col - offset;
     int y = row;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col + offset;
     int y = row;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col;
     int y = row - offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col;
     int y = row + offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   return moves;
 }
@@ -597,26 +588,22 @@ vector<Move> Board::getBishopMoves(int col, int row) const {
   for (int offset = 1; offset <= 7; offset++) {
     int x = col - offset;
     int y = row - offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col + offset;
     int y = row - offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col - offset;
     int y = row + offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
   for (int offset = 1; offset <= 7; offset++) {
     int x = col + offset;
     int y = row + offset;
-    if (!addSlider(moves, col, row, x, y))
-            break;
+    if (!addSlider(moves, col, row, x, y)) break;
   }
 
   return moves;
