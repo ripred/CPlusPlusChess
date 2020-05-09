@@ -16,7 +16,7 @@ static void showBoard(Board& board);
 static void sig_handler(int);
 
 int main(int argc, char** argv) {
-  int maxDepth = 2;
+  int maxDepth = 1;
 
   signal(SIGINT, sig_handler);
 
