@@ -5,6 +5,9 @@
 
 #include "chessutil.h"
 
+#include <iostream>
+using std::cout, std::endl;
+
 namespace chess {
 
   unsigned int getType(unsigned int b) { return Type & b; }

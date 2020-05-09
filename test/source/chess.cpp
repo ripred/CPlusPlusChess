@@ -473,7 +473,7 @@ TEST_CASE("chess::Move") {
   CHECK((move1 == move1) == true);
   CHECK((move1 == move2) == true);
 
-  string correct = "[Move from 1,2 to 3,4 (b6 to d4) value:2000]";
+  string correct = "1,2 to 3,4 b6 to d4 value:2000";
   CHECK(move1.to_string() == correct);
 
   move1 = Move();
@@ -606,15 +606,11 @@ TEST_CASE("chess::Minimax") {
   // execute the black king move
   game.executeMove(move);
   game.advanceTurn();
-  cout << "Black moved: " << move.to_string() << endl;
 
   // White can checkmate by moving from 0,7 to 0,0 (a1 to a8)
   agent = Minimax(1);  // change agent to go to a ply depth of 1
   move = Move(0, 7, 0, 0, 0);
   // execute the white queen move
-  // move = agent.bestMove(game);
-  Move move2 = agent.bestMove(game);
-  cout << "White coverage test: " << move2.to_string() << endl;
   game.executeMove(move);
   game.advanceTurn();
 

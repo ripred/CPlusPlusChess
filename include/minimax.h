@@ -36,6 +36,7 @@ public:
   int qMaxDepth;
   BestMove best;
   long movesProcessed;
+  bool useCache{true};
 
   explicit Minimax(int max_depth = 0);
 

@@ -5,13 +5,7 @@
 
 #pragma once
 
-#define UNUSED(a) \
-  do {            \
-    (void)(a);    \
-  } while (0);
-
 namespace chess {
-
   static int const BOARD_SIZE = 64;
   static unsigned int const White = 1;
   static unsigned int const Black = 0;
@@ -59,4 +53,10 @@ namespace chess {
 
   unsigned int makeSpot(unsigned int type, unsigned int side, bool moved = false,
                         bool inCheck = false);
+
+#define UNUSED(a) \
+  do {            \
+    (void)(a);    \
+  } while (0);
+
 }  // namespace chess

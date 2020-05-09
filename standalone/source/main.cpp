@@ -1,4 +1,5 @@
 #include <minimax.h>
+#include <signal.h>
 
 #include <algorithm>
 #include <iostream>
@@ -12,16 +13,29 @@ using namespace chess;
 
 static void playGame(Board& board, Minimax& agent);
 static void showBoard(Board& board);
+static void sig_handler(int);
 
 int main(int argc, char** argv) {
-  int maxDepth = 0;
+  int maxDepth = 2;
+
+  signal(SIGINT, sig_handler);
 
   Board board;
   Minimax agent(maxDepth);
 
+  if (argc > 1) {
+    agent.useCache = false;
+    cout << endl << "not using cache" << endl;
+  }
+
   playGame(board, agent);
 
   return 0;
+}
+
+void sig_handler(int sig) {
+  cout << "\r   \r" << endl << endl << "Finished!" << endl << endl;
+  exit(0);
 }
 
 static void showBoard(Board& board, Minimax const& agent) {
@@ -29,11 +43,11 @@ static void showBoard(Board& board, Minimax const& agent) {
       = {"", "Pawn   ", "Rook   ", "Knight  ", "Bishop ", "Queen  ", "King   "};
   cout << endl;
   if (board.lastMove.isValid()) {
-    string player = board.turn == White ? " White " : " Black ";
+    string player = (board.getSide(board.lastMove.getTo()) == White) ? "White " : "Black ";
     string piece = names[board.getType(board.lastMove.getTo())];
-    cout << "Turn: " << (board.turns + 1);
-    cout << player << piece << board.lastMove.to_string();
-    cout << " " << agent.movesProcessed << " examined" << endl;
+    cout << "Turn: " << (board.turns + 1) << " ";
+    cout << board.lastMove.to_string(0b110) << " " << player << piece << " ";
+    cout << agent.movesProcessed << " examined" << endl;
   }
   auto lines = board.to_string(board);
   for_each(begin(lines), end(lines), [](auto const& line) { cout << line << endl; });

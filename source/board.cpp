@@ -48,6 +48,8 @@ Board::Board() {
   board[6 + 7 * 8] = makeSpot(Knight, White, false, false);
   board[7 + 7 * 8] = makeSpot(Rook, White, false, false);
 
+  turn = White;
+
   generateMoveLists();
 }
 

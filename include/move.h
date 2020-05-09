@@ -37,6 +37,6 @@ namespace chess {
 
     [[nodiscard]] bool isValid() const { return from != to; }
 
-    [[nodiscard]] string to_string() const;
+    [[nodiscard]] string to_string(unsigned int flag = 0b111U) const;
   };
 }  // namespace chess

@@ -58,6 +58,40 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
 
   UNUSED(pieceMap);
 
+  static int const minHits = 5;
+  static float const minRatio = 0.5;
+
+  struct Entry {
+    Move move;
+    int hit{0};
+    int changed{0};
+  };
+  static map<string, Entry> cache;
+  static char const symbols[2][8]{{' ', 'P', 'R', 'N', 'B', 'Q', 'K', ' '},
+                                  {' ', 'p', 'r', 'n', 'b', 'q', 'k', ' '}};
+  string key = "                                                                ";
+  for (auto i = 0; i < 64; ++i) {
+    unsigned int p = board.board[i];
+    key[i] = symbols[getSide(p)][getType(p)];
+  }
+
+  bool exists = false;
+  Entry hit;
+
+  if (useCache) {
+    exists = cache.find(key) != cache.end();
+  }
+
+  if (exists) {
+    hit = cache[key];
+    float ratio = 0.0;
+    if (hit.changed == 0)
+      ratio = 1.0;
+    else
+      ratio = float(hit.hit) / float(hit.changed);
+    if (hit.hit >= minHits && ratio >= minRatio) return hit.move;
+  }
+
   for (Move const& move : board.moves1) {
     Board currentBoard(board);
     currentBoard.executeMove(move);
@@ -72,6 +106,26 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
       best.move.setValue(best.value);
     }
   }
+
+  if (best.move.isValid()) {
+    bool add = false;
+    if (exists) {
+      if (!(hit.move == best.move)) {
+        if (best.move.getValue() > hit.move.getValue()) {
+          hit.move = best.move;
+          hit.changed++;
+          add = true;
+        }
+      }
+    } else {
+      add = true;
+    }
+    if (add) {
+      hit.hit++;
+      cache[key] = hit;
+    }
+  }
+
   return best.move;
 }
 
