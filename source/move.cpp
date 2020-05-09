@@ -38,7 +38,8 @@ namespace chess {
   void Move::setValue(int val) { value = val; }
 
   bool Move::operator==(Move const& move) const {
-    if (this == &move) return true;
+    if (this == &move)
+            return true;
     return from == move.from && to == move.to && value == move.value;
   }
 
@@ -58,9 +59,12 @@ namespace chess {
         "4,6", "5,6", "6,6", "7,6", "0,7", "1,7", "2,7", "3,7", "4,7", "5,7", "6,7", "7,7"};
 
     string result;
-    if (flag & 1) result += coords[from] + " to " + coords[to] + " ";
-    if (flag & 2) result += notations[from] + " to " + notations[to];
-    if (flag & 4) result += " value:" + std::to_string(value);
+    if (flag & 1)
+            result += coords[from] + " to " + coords[to] + " ";
+    if (flag & 2)
+            result += notations[from] + " to " + notations[to];
+    if (flag & 4)
+            result += " value:" + std::to_string(value);
 
     return result;
   }

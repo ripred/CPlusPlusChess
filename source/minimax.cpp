@@ -34,7 +34,8 @@ Move Minimax::bestMove(Board const& board) {
 
   if (false) {
     for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-      if (board.isEmpty(ndx)) continue;
+      if (board.isEmpty(ndx))
+        continue;
       Bits bits = board.board[ndx];
       pieceMap[getSide(bits)][getType(bits)].push_back(ndx);
     }
@@ -88,7 +89,8 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
     if (hit.changed > 0) {
       ratio = float(hit.hit) / float(hit.changed);
     }
-    if (hit.hit >= minHits && ratio >= minRatio) return hit.move;
+    if (hit.hit >= minHits && ratio >= minRatio)
+      return hit.move;
   }
 
   for (Move const& move : board.moves1) {
