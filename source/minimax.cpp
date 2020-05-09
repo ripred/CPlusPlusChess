@@ -84,11 +84,10 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
 
   if (exists) {
     hit = cache[key];
-    float ratio = 0.0;
-    if (hit.changed == 0)
-      ratio = 1.0;
-    else
+    float ratio = 1.0;
+    if (hit.changed > 0) {
       ratio = float(hit.hit) / float(hit.changed);
+    }
     if (hit.hit >= minHits && ratio >= minRatio) return hit.move;
   }
 
