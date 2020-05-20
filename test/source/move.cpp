@@ -62,4 +62,5 @@ TEST_CASE("chess::Move") {
   CHECK(move1.isValid(game) == false);
   move1 = Move(4, 1, 4, 2, 0);
   CHECK(move1.isValid(game) == true);
+  CHECK(move1.isValid() == true);
 }
