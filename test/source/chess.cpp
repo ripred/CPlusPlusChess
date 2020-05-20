@@ -13,6 +13,7 @@
 #include <minimax.h>
 #include <move.h>
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 

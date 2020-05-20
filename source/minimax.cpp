@@ -135,14 +135,17 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
     std::cerr << "ERROR: number of results (" << threadResults.size() << ") != number of threads ("
               << threads.size() << ")" << endl;
     std::cerr << "return best move: " << best.move.to_string(0b111) << endl;
-    return best.move;
+    exit(-1);
   }
 
-  for (size_t i = 0; i < threadResults.size(); ++i) {
+  size_t resultCount = threadResults.size();
+  for (size_t i = 0; i < resultCount; ++i) {
     ThreadResult const& result = threadResults[i];
 
-    if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
-      best = BestMove(result.move, result.value);
+    if (result.move.isValid(board)) {
+      if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
+        best = BestMove(result.move, result.value);
+      }
     }
   }
 
