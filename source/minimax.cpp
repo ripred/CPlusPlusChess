@@ -88,22 +88,27 @@ pthread_mutex_t lock;
 void* threadFunc(void* ptr) {
   ThreadArgs* pArgs = (ThreadArgs*)ptr;
 
-  Board board = Board(pArgs->board);
-  board.executeMove(pArgs->move);
-  board.advanceTurn();
-  pthread_mutex_lock(&lock);
-  pArgs->agent.movesExamined++;
-  pthread_mutex_unlock(&lock);
-
-  int value = pArgs->agent.minmax(board, MIN_VALUE, MAX_VALUE, pArgs->depth, pArgs->maximize);
-  ThreadResult result(value, pArgs->move);
-
-  pthread_mutex_lock(&lock);
-  threadResults[pArgs->id] = result;
-  pthread_mutex_unlock(&lock);
-
+  Move move = pArgs->move;
+  int id = pArgs->id;
+  bool maximize = pArgs->maximize;
+  int depth = pArgs->depth;
+  Minimax& agent = pArgs->agent;
+  Board board = pArgs->board;
   delete pArgs;
   pArgs = nullptr;
+
+  board.executeMove(move);
+  board.advanceTurn();
+  pthread_mutex_lock(&lock);
+  agent.movesExamined++;
+  pthread_mutex_unlock(&lock);
+
+  int value = agent.minmax(board, MIN_VALUE, MAX_VALUE, depth, maximize);
+  ThreadResult result(value, move);
+
+  pthread_mutex_lock(&lock);
+  threadResults[id] = result;
+  pthread_mutex_unlock(&lock);
 
   pthread_exit(nullptr);
 }
@@ -114,20 +119,22 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
   UNUSED(pieceMap);
   best = BestMove(maximize);
 
+  pthread_mutex_init(&lock, nullptr);
   threadResults.clear();
   threads.clear();
 
-  int index = 0;
-  for (Move const& move : board.moves1) {
-    ThreadArgs* pArgs = new ThreadArgs(board, move, *this, maxDepth, !maximize, index);
-    index++;
+  size_t count = board.moves1.size();
+  for (size_t i = 0; i < count; ++i) {
+    Move const& move = board.moves1[i];
+    ThreadArgs* pArgs = new ThreadArgs(board, move, *this, maxDepth, !maximize, i);
 
     pthread_t tid = 0;
     pthread_create(&tid, nullptr, threadFunc, pArgs);
     threads.push_back(tid);
   }
 
-  for (auto tid : threads) {
+  for (size_t i = 0; i < count; ++i) {
+    auto tid = threads[i];
     pthread_join(tid, nullptr);
   }
 
@@ -138,8 +145,7 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
     exit(-1);
   }
 
-  size_t resultCount = threadResults.size();
-  for (size_t i = 0; i < resultCount; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     ThreadResult const& result = threadResults[i];
 
     if (result.move.isValid(board)) {
