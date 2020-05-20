@@ -46,11 +46,6 @@ namespace chess {
   bool Move::isValid(void) const { return from != to; }
 
   bool Move::isValid(Board const& board) const {
-    //  cout  << "Move::isValid(Board const&board):\n" \
-//        << "  from = " << from << ", to = " << to << endl \
-//        << "  board.board[" << from << "] = " << board.board[from] << endl \
-//        << "  from != to := " << (from != to) << ", board.getType(from) := " << board.getType(from) << endl \
-//        << "  board.getType(from) != Empty := " << (board.getType(from) != Empty) << endl;
     return (from != to) && (board.getType(from) != Empty);
   }
 
