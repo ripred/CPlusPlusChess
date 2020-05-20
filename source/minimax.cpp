@@ -114,10 +114,8 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
   UNUSED(pieceMap);
   best = BestMove(maximize);
 
-  threads.clear();
   threadResults.clear();
-
-  assert(pthread_mutex_init(&lock, nullptr) == 0);
+  threads.clear();
 
   int index = 0;
   for (Move const& move : board.moves1) {
@@ -131,6 +129,13 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
 
   for (auto tid : threads) {
     pthread_join(tid, nullptr);
+  }
+
+  if (threads.size() != threadResults.size()) {
+    std::cerr << "ERROR: number of results (" << threadResults.size() << ") != number of threads ("
+              << threads.size() << ")" << endl;
+    std::cerr << "return best move: " << best.move.to_string(0b111) << endl;
+    return best.move;
   }
 
   for (size_t i = 0; i < threadResults.size(); ++i) {

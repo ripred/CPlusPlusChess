@@ -19,15 +19,6 @@ namespace chess {
     this->to = toCol + toRow * 8;
   }
 
-  Move::Move(Move const& ref)
-      : fromCol(ref.fromCol),
-        fromRow(ref.fromRow),
-        toCol(ref.toCol),
-        toRow(ref.toRow),
-        from(ref.from),
-        to(ref.to),
-        value(ref.value) {}
-
   int Move::getFromCol() const { return fromCol; }
   int Move::getFromRow() const { return fromRow; }
   int Move::getToCol() const { return toCol; }

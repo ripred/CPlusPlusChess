@@ -46,28 +46,27 @@ int main(int argc, char** argv) {
 
   if (options.find("ply") != options.end()) {
     agent.maxDepth = stoi(options["ply"]);
-    cout << "max depth = " << agent.maxDepth << endl;
   }
 
   if (options.find("cache") != options.end()) {
     if (options["cache"] == "n" || options["cache"] == "false") {
       agent.useCache = false;
-      cout << "use cache: no" << endl;
     } else {
       agent.useCache = true;
-      cout << "use cache: yes" << endl;
     }
   }
 
   if (options.find("threads") != options.end()) {
     if (options["threads"] == "n" || options["threads"] == "false") {
       agent.useThreads = false;
-      cout << "use threads: no" << endl;
     } else {
       agent.useThreads = true;
-      cout << "use threads: yes" << endl;
     }
   }
+
+  cout << "use threads: " << (agent.useThreads ? "yes" : "no") << endl;
+  cout << "max depth = " << agent.maxDepth << endl;
+  cout << "use cache: " << (agent.useCache ? "yes" : "no") << endl;
 
   playGame(board, agent);
 

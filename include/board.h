@@ -36,6 +36,7 @@ namespace chess {
   public:
     Board();
     Board(Board const& ref) = default;
+    Board& operator=(Board const& ref) = default;
 
     [[nodiscard]] bool isEmpty(int ndx) const;
     [[nodiscard]] unsigned int getType(int ndx) const;

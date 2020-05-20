@@ -22,7 +22,8 @@ namespace chess {
   public:
     Move();
     Move(int fromCol, int fromRow, int toCol, int toRow, int value);
-    Move(Move const& ref);
+    Move(Move const& ref) = default;
+    Move& operator=(Move const& ref) = default;
 
     [[nodiscard]] int getFromCol() const;
     [[nodiscard]] int getFromRow() const;
