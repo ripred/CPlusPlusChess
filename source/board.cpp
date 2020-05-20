@@ -223,7 +223,7 @@ void Board::executeMove(Move const& move) {
     else
       whtKingLoc = ti;
   } else if (type == Pawn) {
-    if (ty == 0 || ty == 7) {
+    if ((ty == 0 && fromSide == White) || (ty == 7 && fromSide == Black)) {
       setType(ti, Queen);
     }
   }
@@ -287,7 +287,7 @@ vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
   vector<unsigned int> pieces;
 
   for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-    if (isEmpty(ndx) || getSide(ndx) != side) continue;
+    if ((getType(ndx) == Empty) || getSide(ndx) != side) continue;
 
     // add piece to list of pieces for this side
     unsigned int b = board[ndx];
@@ -344,7 +344,7 @@ vector<Move> Board::getMoves(unsigned int const side, bool checkKing) {
  * @return The list of moves sans any illegal moves that would place the king
  *         in check
  */
-vector<Move> Board::cleanupMoves(vector<Move>& moves, unsigned int const side) const {
+vector<Move> Board::cleanupMoves(vector<Move>& moves, unsigned int const side) {
   vector<Move> valid;
   for (Move const& move : moves) {
     Board current(*this);
@@ -353,6 +353,7 @@ vector<Move> Board::cleanupMoves(vector<Move>& moves, unsigned int const side) c
       valid.push_back(move);
     }
   }
+
   return valid;
 }
 

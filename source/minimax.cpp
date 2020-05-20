@@ -5,8 +5,14 @@
 //
 
 #include <minimax.h>
+#include <movecache.h>
+#include <pthread.h>
+
+#include <memory>
 
 using namespace chess;
+
+MoveCache Minimax::cache;
 
 Minimax::Minimax(int max_depth) : best(true) {
   maxDepth = max_depth;
@@ -15,14 +21,13 @@ Minimax::Minimax(int max_depth) : best(true) {
 }
 
 Move Minimax::bestMove(Board const& board) {
-  bool maximize = (board.turn == White);
+  bool const maximize = (board.turn == White);
   best = BestMove(maximize);
   movesExamined = 0L;
 
   if (board.moves1.size() == 1) {
-    best.move = board.moves1[0];
-    best.value = best.move.getValue();
-    movesExamined = 1L;
+    best = BestMove(board.moves1[0], board.moves1[0].getValue());
+    movesExamined = best.movesExamined = 1;
     return best.move;
   }
 
@@ -40,8 +45,103 @@ Move Minimax::bestMove(Board const& board) {
     }
   }
 
-  // no-thread version implemented first
-  return searchWithNoThreads(board, maximize, pieceMap);
+  if (useCache) {
+    auto move = cache.lookup(board);
+    if (move.isValid(board)) {
+      return move;
+    }
+  }
+
+  auto move = useThreads ? searchWithThreads(board, maximize, pieceMap)
+                         : searchWithNoThreads(board, maximize, pieceMap);
+
+  if (move.isValid(board)) {
+    cache.offer(board, move);
+  }
+
+  return move;
+}
+
+struct ThreadArgs {
+  Board const& board;
+  Move const& move;
+  Minimax& agent;
+  int depth;
+  bool maximize;
+  int id;
+
+  ThreadArgs() = delete;
+  ThreadArgs(Board const& b, Move const& m, Minimax& mm, int d, bool max, int tid)
+      : board(b), move(m), agent(mm), depth(d), maximize(max), id(tid) {}
+};
+
+struct ThreadResult {
+  int value;
+  Move move;
+  ThreadResult() { value = 0; }
+  ThreadResult(int const i, Move const& m) : value(i), move(m) {}
+};
+
+map<int, ThreadResult> threadResults;
+pthread_mutex_t lock;
+
+void* threadFunc(void* ptr) {
+  ThreadArgs* pArgs = (ThreadArgs*)ptr;
+
+  Board board = Board(pArgs->board);
+  board.executeMove(pArgs->move);
+  board.advanceTurn();
+  pthread_mutex_lock(&lock);
+  pArgs->agent.movesExamined++;
+  pthread_mutex_unlock(&lock);
+
+  int value = pArgs->agent.minmax(board, MIN_VALUE, MAX_VALUE, pArgs->depth, pArgs->maximize);
+  ThreadResult result(value, pArgs->move);
+
+  pthread_mutex_lock(&lock);
+  threadResults[pArgs->id] = result;
+  pthread_mutex_unlock(&lock);
+
+  delete pArgs;
+  pArgs = nullptr;
+
+  pthread_exit(nullptr);
+}
+
+vector<pthread_t> threads;
+
+Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pieceMap) {
+  UNUSED(pieceMap);
+  best = BestMove(maximize);
+
+  threads.clear();
+  threadResults.clear();
+
+  assert(pthread_mutex_init(&lock, nullptr) == 0);
+
+  int index = 0;
+  for (Move const& move : board.moves1) {
+    ThreadArgs* pArgs = new ThreadArgs(board, move, *this, maxDepth, !maximize, index);
+    index++;
+
+    pthread_t tid = 0;
+    pthread_create(&tid, nullptr, threadFunc, pArgs);
+    threads.push_back(tid);
+  }
+
+  for (auto tid : threads) {
+    pthread_join(tid, nullptr);
+  }
+
+  for (size_t i = 0; i < threadResults.size(); ++i) {
+    ThreadResult const& result = threadResults[i];
+
+    if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
+      best = BestMove(result.move, result.value);
+    }
+  }
+
+  return best.move;
 }
 
 /**
@@ -55,41 +155,8 @@ Move Minimax::bestMove(Board const& board) {
 Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& pieceMap) {
   // We are not using threads.
   // Walk through all moves and find the best and return it in this calling thread.
-
   UNUSED(pieceMap);
-
-  static int const minHits = 5;
-  static float const minRatio = 0.5;
-
-  struct Entry {
-    Move move;
-    int hit{0};
-    int changed{0};
-  };
-  static map<string, Entry> cache;
-  static char const symbols[2][8]{{' ', 'P', 'R', 'N', 'B', 'Q', 'K', ' '},
-                                  {' ', 'p', 'r', 'n', 'b', 'q', 'k', ' '}};
-  string key = "                                                                ";
-  for (auto i = 0; i < 64; ++i) {
-    unsigned int p = board.board[i];
-    key[i] = symbols[getSide(p)][getType(p)];
-  }
-
-  bool exists = false;
-  Entry hit;
-
-  if (useCache) {
-    exists = cache.find(key) != cache.end();
-  }
-
-  if (exists) {
-    hit = cache[key];
-    float ratio = 1.0;
-    if (hit.changed > 0) {
-      ratio = float(hit.hit) / float(hit.changed);
-    }
-    if (hit.hit >= minHits && ratio >= minRatio) return hit.move;
-  }
+  best = BestMove(maximize);
 
   for (Move const& move : board.moves1) {
     Board currentBoard(board);
@@ -98,30 +165,10 @@ Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& p
     movesExamined++;
 
     int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
-
     if ((maximize && lookAheadVal > best.value) || (!maximize && lookAheadVal < best.value)) {
       best.value = lookAheadVal;
       best.move = move;
       best.move.setValue(best.value);
-    }
-  }
-
-  if (best.move.isValid()) {
-    bool add = false;
-    if (exists) {
-      if (!(hit.move == best.move)) {
-        if (best.move.getValue() > hit.move.getValue()) {
-          hit.move = best.move;
-          hit.changed++;
-          add = true;
-        }
-      }
-    } else {
-      add = true;
-    }
-    if (add) {
-      hit.hit++;
-      cache[key] = hit;
     }
   }
 
@@ -161,7 +208,9 @@ int Minimax::minmax(Board const& origBoard, int alpha, int beta, int depth, bool
 
     if (depth <= 0) {
       if ((move.getValue() == 0) || depth <= qMaxDepth) {
+        pthread_mutex_lock(&lock);
         movesExamined += mmBest.movesExamined;
+        pthread_mutex_unlock(&lock);
         return Evaluator::evaluate(origBoard);
       }
     }
@@ -205,7 +254,9 @@ int Minimax::minmax(Board const& origBoard, int alpha, int beta, int depth, bool
     }
   }
 
+  pthread_mutex_lock(&lock);
   movesExamined += mmBest.movesExamined;
+  pthread_mutex_unlock(&lock);
 
   return mmBest.value;
 }

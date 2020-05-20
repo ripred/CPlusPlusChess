@@ -8,6 +8,7 @@
 using std::string;
 
 namespace chess {
+  class Board;
   class Move {
   private:
     int fromCol;
@@ -35,8 +36,9 @@ namespace chess {
 
     bool operator==(Move const& move) const;
 
-    [[nodiscard]] bool isValid() const { return from != to; }
+    [[nodiscard]] bool isValid(void) const;
+    [[nodiscard]] bool isValid(Board const& board) const;
 
-    [[nodiscard]] string to_string(unsigned int flag = 0b111U) const;
+    [[nodiscard]] string to_string(unsigned int flag = 0b111) const;
   };
 }  // namespace chess

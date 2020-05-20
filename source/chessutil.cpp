@@ -4,12 +4,7 @@
  */
 
 #include "chessutil.h"
-
-#include <iostream>
-using std::cout, std::endl;
-
 namespace chess {
-
   unsigned int getType(unsigned int b) { return Type & b; }
 
   bool isEmpty(unsigned int b) { return getType(b) == Empty; }
@@ -44,5 +39,17 @@ namespace chess {
     b = setCheck(b, inCheck);
     return b;
   }
+
+  string getCoords(int index) { return coords[index]; }
+
+  string getCoords(int file, int rank) { return getCoords(file + rank * 8); }
+
+  string getNotate(int index) { return notations[index]; }
+
+  string getNotate(int file, int rank) { return getNotate(file + rank * 8); }
+
+  string getName(unsigned int b) { return names[getType(b)]; }
+
+  string getColor(unsigned int b) { return getSide(b) == White ? "White" : "Black"; }
 
 }  // namespace chess

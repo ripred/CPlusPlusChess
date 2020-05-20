@@ -16,16 +16,57 @@ static void showBoard(Board& board);
 static void sig_handler(int);
 
 int main(int argc, char** argv) {
-  int maxDepth = 1;
-
   signal(SIGINT, sig_handler);
 
+  int maxDepth = 1;
   Board board;
   Minimax agent(maxDepth);
 
-  if (argc > 1) {
-    agent.useCache = false;
-    cout << endl << "not using cache" << endl;
+  map<string, string> options;
+  string lastArg;
+  for (auto index = 1; index < argc; ++index) {
+    string arg = argv[index];
+    if (arg.size() > 0 && (*(arg.end() - 1) == '=' || *(arg.end() - 1) == ':')) {
+      arg = arg.substr(0, arg.size() - 1);
+    }
+    if (arg.size() > 0 && (arg[0] == '=' || arg[0] == ':')) {
+      arg = arg.substr(1);
+    }
+    if (lastArg.empty()) {
+      lastArg = arg;
+      continue;
+    }
+    options[lastArg] = arg;
+    lastArg.clear();
+  }
+  if (!lastArg.empty()) {
+    options[lastArg] = "";
+    lastArg.clear();
+  }
+
+  if (options.find("ply") != options.end()) {
+    agent.maxDepth = stoi(options["ply"]);
+    cout << "max depth = " << agent.maxDepth << endl;
+  }
+
+  if (options.find("cache") != options.end()) {
+    if (options["cache"] == "n" || options["cache"] == "false") {
+      agent.useCache = false;
+      cout << "use cache: no" << endl;
+    } else {
+      agent.useCache = true;
+      cout << "use cache: yes" << endl;
+    }
+  }
+
+  if (options.find("threads") != options.end()) {
+    if (options["threads"] == "n" || options["threads"] == "false") {
+      agent.useThreads = false;
+      cout << "use threads: no" << endl;
+    } else {
+      agent.useThreads = true;
+      cout << "use threads: yes" << endl;
+    }
   }
 
   playGame(board, agent);
@@ -39,17 +80,37 @@ void sig_handler(int sig) {
 }
 
 static void showBoard(Board& board, Minimax const& agent) {
-  static string const names[]
-      = {"", "Pawn   ", "Rook   ", "Knight  ", "Bishop ", "Queen  ", "King   "};
+  static char const types[7] = {' ', 'p', 'n', 'b', 'r', 'q', 'k'};
+  static string const names[7]
+      = {"", "Pawn   ", "Knight  ", "Bishop ", "Rook   ", "Queen  ", "King   "};
   cout << endl;
   if (board.lastMove.isValid()) {
     string player = (board.getSide(board.lastMove.getTo()) == White) ? "White " : "Black ";
     string piece = names[board.getType(board.lastMove.getTo())];
-    cout << "Turn: " << (board.turns + 1) << " ";
-    cout << board.lastMove.to_string(0b110) << " " << player << piece << " ";
-    cout << agent.movesExamined << " examined" << endl;
+    cout << "Turn: " << board.turns << " ";
+    cout << board.lastMove.to_string(0b010) << " " << player << piece << " ";
+    cout << endl;
   }
   auto lines = board.to_string(board);
+  lines[1] += "      Taken1 : ";
+  lines[2] += "      Taken2 : ";
+  lines[3] += "      Score  : " + std::to_string(board.lastMove.getValue());
+  int line = 4;
+  lines[line++] += "    Examined : " + std::to_string(agent.movesExamined);
+  if (board.kingInCheck(White)) {
+    lines[line++] += "    White is in Check!";
+  }
+  if (board.kingInCheck(Black)) {
+    lines[line++] += "    Black is in Check!";
+  }
+
+  for (auto piece : board.taken1) {
+    lines[1] += types[getType(piece)];
+  }
+  for (auto piece : board.taken2) {
+    lines[2] += toupper(types[getType(piece)]);
+  }
+
   for_each(begin(lines), end(lines), [](auto const& line) { cout << line << endl; });
 }
 
@@ -60,7 +121,7 @@ static void playGame(Board& board, Minimax& agent) {
 
   Move move = agent.bestMove(board);
 
-  while (move.isValid()) {
+  while (move.isValid(board)) {
     if (board.checkDrawByRepetition(move, maxRepetitions)) break;
     board.executeMove(move);
     board.advanceTurn();

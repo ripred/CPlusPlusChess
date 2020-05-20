@@ -79,7 +79,7 @@ namespace chess {
 
     vector<Move> getMoves(unsigned int side, bool checkKing);
 
-    vector<Move> cleanupMoves(vector<Move>& moves, unsigned int side) const;
+    vector<Move> cleanupMoves(vector<Move>& moves, unsigned int side);
 
     static bool isValidSpot(int col, int row);
 

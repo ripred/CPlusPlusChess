@@ -19,13 +19,9 @@ using std::vector;
 #include <chessutil.h>
 #include <evaluator.h>
 #include <move.h>
+#include <movecache.h>
 
 using namespace chess;
-
-typedef unsigned int Bits;
-typedef vector<Bits> PieceList;
-typedef map<Bits, PieceList> SidePieceMap;
-typedef map<Bits, SidePieceMap> PieceMap;
 
 #include <iostream>
 using std::cout, std::endl;
@@ -34,9 +30,11 @@ class Minimax {
 public:
   int maxDepth;
   int qMaxDepth;
-  BestMove best;
   long movesExamined;
   bool useCache{true};
+  bool useThreads{true};
+  BestMove best;
+  static MoveCache cache;
 
   explicit Minimax(int max_depth = 0);
 
@@ -51,6 +49,9 @@ public:
    * @return the best move for this board
    */
   Move searchWithNoThreads(Board const& board, bool maximize, PieceMap& pieceMap);
+
+  // Search With threads
+  Move searchWithThreads(Board const& board, bool maximize, PieceMap& pieceMap);
 
   /**
    * The awesome, one and only, minimax algorithm method which recursively searches
