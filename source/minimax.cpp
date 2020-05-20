@@ -138,13 +138,6 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
     pthread_join(tid, nullptr);
   }
 
-  if (threads.size() != threadResults.size()) {
-    std::cerr << "ERROR: number of results (" << threadResults.size() << ") != number of threads ("
-              << threads.size() << ")" << endl;
-    std::cerr << "return best move: " << best.move.to_string(0b111) << endl;
-    exit(-1);
-  }
-
   for (size_t i = 0; i < count; ++i) {
     ThreadResult const& result = threadResults[i];
 
