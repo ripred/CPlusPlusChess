@@ -33,4 +33,4 @@ set_target_properties(ChessStandalone PROPERTIES
   OUTPUT_NAME "chess"
 )
 
-target_link_libraries(ChessStandalone chess cxxopts)
+target_link_libraries(ChessStandalone chess cxxopts -g -pthread)
