@@ -8,6 +8,6 @@
 #include <movecache.h>
 using namespace chess;
 
-int MoveCache::minHits = 5;
+int MoveCache::minHits = 1;
 float MoveCache::minRatio = 0.5;
 map<string, MoveCache::Entry> MoveCache::cache;

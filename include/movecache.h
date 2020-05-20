@@ -22,7 +22,7 @@ namespace chess {
     struct Entry {
       Move move;
       int hit, changed;
-      Entry() : hit(0), changed(0) {}
+      Entry() : hit(1), changed(0) {}
     };
 
   private:
