@@ -51,7 +51,7 @@ set_target_properties(chess PROPERTIES CXX_STANDARD 17)
 target_compile_options(chess PUBLIC "$<$<BOOL:${MSVC}>:/permissive->" "-pthread" "-O0" "-g")
 
 # Link dependencies (if required)
-# target_link_libraries(chess PUBLIC cxxopts)
+#target_link_libraries(chess PUBLIC cxxopts -g -pthread)
 
 target_include_directories(chess
   PUBLIC
