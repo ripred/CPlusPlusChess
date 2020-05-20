@@ -50,6 +50,6 @@ namespace chess {
 
   string getName(unsigned int b) { return names[getType(b)]; }
 
-  string getColor(unsigned int b) { return getSide(b) == White ? "White" : "Black"; }
+  string getColor(unsigned int b) { return chess::getSide(b) == White ? "White" : "Black"; }
 
 }  // namespace chess

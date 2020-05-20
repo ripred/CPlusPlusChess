@@ -79,4 +79,17 @@ TEST_CASE("chess::chessutil") {
 
   CHECK(setMoved(setSide(setType(Empty, Pawn), White), true) == (Moved | Pawn | Side));
   CHECK(setMoved(setSide(setType(Empty, Pawn), Black), true) == (Moved | Pawn));
+
+  CHECK(getCoords(44) == string("4,5"));
+  CHECK(getCoords(4, 5) == string("4,5"));
+  CHECK(getNotate(4, 5) == string("e3"));
+  CHECK(getNotate(44) == string("e3"));
+  CHECK(getName(Pawn) == string("Pawn"));
+  CHECK(getName(Knight) == string("Knight"));
+  CHECK(getName(Bishop) == string("Bishop"));
+  CHECK(getName(Rook) == string("Rook"));
+  CHECK(getName(Queen) == string("Queen"));
+  CHECK(getName(King) == string("King"));
+  CHECK(getColor(whitePawn) == string("White"));
+  CHECK(getColor(blackPawn) == string("Black"));
 }
