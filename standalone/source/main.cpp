@@ -1,8 +1,16 @@
+/**
+ * main entry point for standalone C++17 chess implementation
+ *
+ * written 2020 trent m wyatt
+ *
+ */
+
+#include <options.h>
 #include <minimax.h>
-#include <signal.h>
 
 #include <algorithm>
 #include <iostream>
+#include <csignal>
 #include <string>
 
 using std::cout;
@@ -18,56 +26,18 @@ static void sig_handler(int);
 int main(int argc, char** argv) {
   signal(SIGINT, sig_handler);
 
-  int maxDepth = 1;
-  Board board;
-  Minimax agent(maxDepth);
+  Options options(argc, argv);
 
-  map<string, string> options;
-  string lastArg;
-  for (auto index = 1; index < argc; ++index) {
-    string arg = argv[index];
-    if (arg.size() > 0 && (*(arg.end() - 1) == '=' || *(arg.end() - 1) == ':')) {
-      arg = arg.substr(0, arg.size() - 1);
-    }
-    if (arg.size() > 0 && (arg[0] == '=' || arg[0] == ':')) {
-      arg = arg.substr(1);
-    }
-    if (lastArg.empty()) {
-      lastArg = arg;
-      continue;
-    }
-    options[lastArg] = arg;
-    lastArg.clear();
-  }
-  if (!lastArg.empty()) {
-    options[lastArg] = "";
-    lastArg.clear();
-  }
+  Minimax agent(options.getInt("ply", 1));
 
-  if (options.find("ply") != options.end()) {
-    agent.maxDepth = stoi(options["ply"]);
-  }
-
-  if (options.find("cache") != options.end()) {
-    if (options["cache"] == "n" || options["cache"] == "false") {
-      agent.useCache = false;
-    } else {
-      agent.useCache = true;
-    }
-  }
-
-  if (options.find("threads") != options.end()) {
-    if (options["threads"] == "n" || options["threads"] == "false") {
-      agent.useThreads = false;
-    } else {
-      agent.useThreads = true;
-    }
-  }
+  agent.useCache = options.getBool("cache", false);
+  agent.useThreads = options.getBool("threads", true);
 
   cout << "use threads: " << (agent.useThreads ? "yes" : "no") << endl;
   cout << "max depth = " << agent.maxDepth << endl;
   cout << "use cache: " << (agent.useCache ? "yes" : "no") << endl;
 
+  Board board;
   playGame(board, agent);
 
   return 0;

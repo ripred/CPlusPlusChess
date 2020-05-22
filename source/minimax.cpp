@@ -1,14 +1,38 @@
-//
-// minimax.cpp
-//
-// minimax algorithm implemented in c++ for chess board evaluation
-//
+/**
+ * minimax.cpp
+ *
+ * minmax algorithm implemented in c++ for chess board evaluation
+ */
+
+/**
+ * MinMax Algorithm Template (yet to be written)
+ *
+ *  Can be applied to game problems if the following are true:
+ *
+ *      1 - carries a state which is static between player turns
+ *      2 - is turn based
+ *      3 - has a < operator (for eval)
+ *      4 - transitions between states use concepts called 'moves'
+ *      5 - one or more states define a win (or loss)
+ *
+ *      Game problem domains in this group include:
+ *          * tic-tac-toe
+ *          * card games
+ *          * chess, checkers &c.  Basically any board game that is turn-based
+*/
+
+
 
 #include <minimax.h>
 #include <movecache.h>
-#include <pthread.h>
 
+#include <pthread.h>
 #include <memory>
+
+#include <utility>
+#include <thread>
+#include <chrono>
+
 
 using namespace chess;
 
