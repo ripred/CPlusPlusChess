@@ -81,7 +81,6 @@ Move Minimax::bestMove(Board const& board) {
   return move;
 }
 
-
 struct ThreadArgs {
   Board const& board;
   Move const& move;

@@ -45,7 +45,7 @@ set_target_properties(ChessTests PROPERTIES CXX_STANDARD 17)
 # enable compiler warnings
 if (NOT TEST_INSTALLED_VERSION)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(chess PUBLIC -Wall -pedantic -Wextra -Werror)
+    target_compile_options(chess PUBLIC -Wall -g -pthread -pedantic -Wextra -Werror)
   elseif(MSVC)
     target_compile_options(chess PUBLIC /W4 /WX)
   endif()
@@ -65,6 +65,6 @@ doctest_discover_tests(ChessTests)
 # ---- code coverage ----
 
 if (ENABLE_TEST_COVERAGE)
-  target_compile_options(chess PUBLIC -g -fprofile-arcs -ftest-coverage)
-  target_link_options(chess PUBLIC -g -fprofile-arcs -ftest-coverage)
+  target_compile_options(chess PUBLIC -g -pthread -fprofile-arcs -ftest-coverage)
+  target_link_options(chess PUBLIC -g -pthread -fprofile-arcs -ftest-coverage)
 endif()

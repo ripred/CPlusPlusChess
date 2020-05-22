@@ -38,7 +38,6 @@ public:
 
   explicit Minimax(int max_depth = 0);
 
-
   Move bestMove(Board const& board);
 
   /**
