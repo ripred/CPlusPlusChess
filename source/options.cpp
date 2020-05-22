@@ -10,9 +10,11 @@ using namespace chess;
 
 Options::Options(int const argc, char** argv) { parse(argc, argv); }
 
+void Options::clear() { options.clear(); }
+
 bool Options::parse(int const argc, char** argv) {
   string lastArg;
-  for (auto index = 1; index < argc; ++index) {
+  for (auto index = 0; index < argc; ++index) {
     string arg = argv[index];
     int firstChar = arg.empty() ? 0 : arg[0];
     int lastChar = arg.empty() ? 0 : *(arg.end() - 1);
@@ -77,7 +79,7 @@ int Options::getInt(const char* const key, int const def) {
   return stoi(value);
 }
 
-double Options::getFloat(const char* const key, double const def) {
+float Options::getFloat(const char* const key, float const def) {
   return exists(key) ? stof(options[key]) : def;
 }
 
@@ -93,7 +95,7 @@ void Options::set(char const* key, char const* value) { options[string(key)] = s
 
 void Options::setInt(char const* key, int const value) { options[string(key)] = to_string(value); }
 
-void Options::setFloat(char const* key, double const value) {
+void Options::setFloat(char const* key, float const value) {
   options[string(key)] = to_string(value);
 }
 
