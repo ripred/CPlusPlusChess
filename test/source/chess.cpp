@@ -1,5 +1,4 @@
 #include <doctest/doctest.h>
-#include <pthread.h>
 
 #if defined(_WIN32) || defined(WIN32)
 // apparently this is required to compile in MSVC++
