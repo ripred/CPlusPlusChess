@@ -66,5 +66,5 @@ doctest_discover_tests(ChessTests)
 
 if (ENABLE_TEST_COVERAGE)
   target_compile_options(chess PUBLIC -g -pthread -fprofile-arcs -ftest-coverage)
-  target_link_options(chess PUBLIC -g -pthread -fprofile-arcs -ftest-coverage)
+  target_link_options(chess PUBLIC -g -lpthread -fprofile-arcs -ftest-coverage)
 endif()
