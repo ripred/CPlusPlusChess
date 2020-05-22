@@ -23,9 +23,7 @@
 
 #include <minimax.h>
 #include <movecache.h>
-#include <pthread.h>
 
-#include <chrono>
 #include <memory>
 #include <mutex>
 #include <thread>
