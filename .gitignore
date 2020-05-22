@@ -3,6 +3,7 @@
 .DS_Store
 .idea
 .run
+.run/ChessTests.run.xml
 cmake-build-debug
 bs
 cbs
