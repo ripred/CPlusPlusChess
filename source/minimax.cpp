@@ -90,7 +90,7 @@ struct ThreadArgs {
   size_t id;
 
   ThreadArgs() = delete;
-  ThreadArgs(Board const& b, Move const& m, Minimax& mm, int d, bool max, int tid)
+  ThreadArgs(Board const& b, Move const& m, Minimax& mm, int d, bool max, size_t tid)
       : board(b), move(m), agent(mm), depth(d), maximize(max), id(tid) {}
 };
 
@@ -101,7 +101,7 @@ struct ThreadResult {
   ThreadResult(int const i, Move const& m) : value(i), move(m) {}
 };
 
-map<int, ThreadResult> threadResults;
+map<size_t, ThreadResult> threadResults;
 
 using std::mutex;
 using std::thread;
@@ -116,7 +116,7 @@ void* threadFunc(void* ptr) {
   ThreadArgs* pArgs = (ThreadArgs*)ptr;
 
   Move move = pArgs->move;
-  int id = pArgs->id;
+  size_t id = pArgs->id;
   bool maximize = pArgs->maximize;
   int depth = pArgs->depth;
   Minimax& agent = pArgs->agent;
