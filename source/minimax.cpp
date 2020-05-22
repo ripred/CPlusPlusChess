@@ -26,8 +26,8 @@
 
 #include <chrono>
 #include <memory>
-#include <thread>
 #include <mutex>
+#include <thread>
 
 using namespace chess;
 
@@ -87,7 +87,7 @@ struct ThreadArgs {
   Minimax& agent;
   int depth;
   bool maximize;
-  int id;
+  size_t id;
 
   ThreadArgs() = delete;
   ThreadArgs(Board const& b, Move const& m, Minimax& mm, int d, bool max, int tid)
@@ -150,7 +150,7 @@ Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pie
   size_t count = board.moves1.size();
   for (size_t i = 0; i < count; ++i) {
     Move const& move = board.moves1[i];
-    auto* pArgs = new ThreadArgs(board, move, *this, maxDepth, !maximize, i);
+    ThreadArgs* pArgs = new ThreadArgs(board, move, *this, maxDepth, !maximize, i);
 
     threads.push_back(thread(threadFunc, pArgs));
   }
