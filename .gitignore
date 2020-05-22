@@ -5,6 +5,7 @@
 .run
 .run/ChessTests.run.xml
 cmake-build-debug
+options.txt
 bs
 cbs
 ts

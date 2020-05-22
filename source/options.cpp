@@ -17,13 +17,17 @@ bool Options::parse(int const argc, char** argv) {
   for (auto index = 0; index < argc; ++index) {
     string arg = argv[index];
     int firstChar = arg.empty() ? 0 : arg[0];
+    if (firstChar == '=' || firstChar == ':') {
+      arg = arg.substr(1);
+    }
+
     int lastChar = arg.empty() ? 0 : *(arg.end() - 1);
     if (lastChar == '=' || lastChar == ':') {
       arg = arg.substr(0, arg.size() - 1);
     }
-    if (firstChar == '=' || firstChar == ':') {
-      arg = arg.substr(1);
-    }
+
+    if (arg.empty()) continue;
+
     if (lastArg.empty()) {
       lastArg = arg;
       continue;
@@ -41,8 +45,8 @@ bool Options::parse(int const argc, char** argv) {
 bool Options::write(string const& filename) {
   std::ofstream ostream(filename, std::ios::binary);
   for (auto& entry : options) {
-    ostream << entry.first;
-    ostream << entry.second;
+    ostream << entry.first << std::endl;
+    ostream << entry.second << std::endl;
   }
 
   return true;
