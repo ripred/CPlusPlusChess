@@ -5,12 +5,12 @@
  *
  */
 
-#include <options.h>
 #include <minimax.h>
+#include <options.h>
 
 #include <algorithm>
-#include <iostream>
 #include <csignal>
+#include <iostream>
 #include <string>
 
 using std::cout;

@@ -19,20 +19,16 @@
  *          * tic-tac-toe
  *          * card games
  *          * chess, checkers &c.  Basically any board game that is turn-based
-*/
-
-
+ */
 
 #include <minimax.h>
 #include <movecache.h>
-
 #include <pthread.h>
-#include <memory>
 
-#include <utility>
-#include <thread>
 #include <chrono>
-
+#include <memory>
+#include <thread>
+#include <utility>
 
 using namespace chess;
 
