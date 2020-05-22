@@ -434,7 +434,7 @@ TEST_CASE("chess::Board") {
   // White has queen at 4,0 (promoted from pawn)
   // Black has queen at 4,7 (promoted from pawn)
   game.generateMoveLists();
-  Minimax agent(3);
+  Minimax agent(1);
   game.turn = White;
   move = agent.bestMove(game);
   long movesExamined = agent.movesExamined;
