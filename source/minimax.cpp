@@ -68,8 +68,8 @@ namespace chess {
 
   class ScopedLock {
   private:
-    mutex mut;
-    mutex& ref{mut};
+    std::mutex mut;
+    std::mutex& ref{mut};
 
   public:
     ScopedLock() = delete;
