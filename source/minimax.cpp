@@ -29,13 +29,14 @@
 #include <mutex>
 #include <thread>
 
-namespace chess {
-  using std::mutex;
-  using std::thread;
-  using std::this_thread::yield;
+using std::mutex;
+using std::thread;
+using std::this_thread::yield;
 
 #include <chrono>
-  using std::chrono::steady_clock;
+using std::chrono::steady_clock;
+
+namespace chess {
 
   MoveCache Minimax::cache;
 
@@ -63,8 +64,8 @@ namespace chess {
   using std::thread;
 
   map<size_t, ThreadResult> threadResults;
-  vector<thread> threads;
-  mutex lock1;
+  vector<std::thread> threads;
+  std::mutex lock1;
 
   class ScopedLock {
   private:
@@ -73,7 +74,7 @@ namespace chess {
 
   public:
     ScopedLock() = delete;
-    explicit ScopedLock(mutex& m) : ref(m) { ref.lock(); }
+    explicit ScopedLock(std::mutex& m) : ref(m) { ref.lock(); }
     virtual ~ScopedLock() { ref.unlock(); }
   };
 
@@ -267,7 +268,7 @@ namespace chess {
           return mmBest.value;
         }
       }
-      yield();
+      std::this_thread::yield();
 
       ///////////////////////////////////////////////////////////////////
       // See if we are at the end of our allowed depth to search and if so,
