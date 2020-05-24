@@ -89,10 +89,9 @@ void checkEnPassant(unsigned int side) {
   CHECK(numPawnMoves == 2);
   CHECK(numPawnMoves > 0);
   if (numPawnMoves > 0) {
-    Move move{0, 0, 0, 0, 0};
     CHECK(numPawnMoves > 1);
     if (numPawnMoves > 1) {
-      move = pawnMoves[1];
+      Move& move = pawnMoves[1];
       if (move.getFromCol() == move.getToCol()) {
         // this is a single-push
       }
@@ -100,10 +99,9 @@ void checkEnPassant(unsigned int side) {
       CHECK(toRow == move.getToRow());
       if (toCol == move.getToCol()) {
         // this should be an en-passant capture on the right
-        CHECK(move.getValue()
-              != 0);  // the move should capture a piece and so should have some value
+        CHECK(move.getValue() != 0);  // the move should should have some value
 
-        auto numTaken = game.taken2.size();
+        auto numTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
         game.executeMove(move);
         size_t correctTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
         CHECK(numTaken + 1 == correctTaken);
@@ -255,9 +253,6 @@ TEST_CASE("chess::Board") {
 
   // reset board to new game
   game = Board();
-
-  CHECK(game.pieces1.size() == 16);
-  CHECK(game.pieces2.size() == 16);
 
   // test piece moves on default constructor (new game)
 

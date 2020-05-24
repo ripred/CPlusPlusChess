@@ -11,6 +11,7 @@ namespace chess {
   class Board;
   class Move {
   private:
+    Piece captured;
     int fromCol;
     int fromRow;
     int toCol;
@@ -24,6 +25,7 @@ namespace chess {
     Move(int fromCol, int fromRow, int toCol, int toRow, int value);
     Move(Move const& ref) = default;
     Move& operator=(Move const& ref) = default;
+    bool operator==(Move const& move) const;
 
     [[nodiscard]] int getFromCol() const;
     [[nodiscard]] int getFromRow() const;
@@ -32,12 +34,13 @@ namespace chess {
     [[nodiscard]] int getFrom() const;
     [[nodiscard]] int getTo() const;
     [[nodiscard]] int getValue() const;
+    [[nodiscard]] Piece getCaptured() const;
+    [[nodiscard]] bool isCapture() const;
 
     void setValue(int value);
+    void setCaptured(Piece p);
 
-    bool operator==(Move const& move) const;
-
-    [[nodiscard]] bool isValid(void) const;
+    [[nodiscard]] bool isValid() const;
     [[nodiscard]] bool isValid(Board const& board) const;
 
     [[nodiscard]] string to_string(unsigned int flag = 0b111) const;

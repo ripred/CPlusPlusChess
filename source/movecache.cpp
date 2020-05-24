@@ -6,8 +6,58 @@
  */
 
 #include <movecache.h>
-using namespace chess;
+namespace chess {
+  map<string, MoveCache::Entry> MoveCache::cache;
 
-int MoveCache::minHits = 1;
-float MoveCache::minRatio = 0.5;
-map<string, MoveCache::Entry> MoveCache::cache;
+  int MoveCache::num_offered;
+  int MoveCache::num_entries;
+  int MoveCache::num_lookups;
+  int MoveCache::num_changed;
+  int MoveCache::num_found;
+
+  string MoveCache::createKey(const Board& board) {
+    char key[BOARD_SIZE + 1]{};
+    for (auto i = 0; i < BOARD_SIZE; ++i) {
+      unsigned int p = board.board[i];
+      key[i] = symbols[getSide(p)][getType(p)];
+    }
+    key[BOARD_SIZE] = 0;
+    return string(key);
+  }
+
+  Move MoveCache::lookup(const Board& board) {
+    string key = createKey(board);
+    bool exists = false;
+    Entry hit;
+
+    ++num_lookups;
+
+    exists = (cache.find(key) != cache.end());
+    if (exists) {
+      ++num_found;
+      return cache[key].move;
+    } else {
+      return Move();
+    }
+  }
+
+  void MoveCache::offer(const Board& board, Move& move) {
+    ++num_offered;
+
+    if (!move.isValid(board)) return;
+    string key = createKey(board);
+    if (cache.find(key) == cache.end()) {
+      ++num_entries;
+      cache[key] = Entry(move);
+      return;
+    }
+    Entry hit = cache[key];
+    if (move.getValue() > hit.move.getValue()) {
+      ++num_changed;
+      hit.move = move;
+      hit.changed++;
+      hit.hit++;
+      cache[key] = hit;
+    }
+  }
+}  // namespace chess

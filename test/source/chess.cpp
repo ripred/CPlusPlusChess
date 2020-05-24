@@ -17,7 +17,6 @@
 #include <string>
 
 using namespace chess;
-using MoveList = vector<Move>;
 using std::find;
 using std::get;
 using std::tuple;
@@ -178,7 +177,7 @@ TEST_CASE("chess::Minimax") {
   // start a fresh game board
   game = Board();
   // clear all the spots
-  for (Bits& bits : game.board) {
+  for (Piece& bits : game.board) {
     bits = Empty;
   }
   // save blank board for re-use
@@ -320,6 +319,6 @@ TEST_CASE("chess::Minimax") {
   move = agent.bestMove(game);
   CHECK(game.moves1.empty() == true);
   CHECK(game.moves2.size() == 34);
-  CHECK(game.kingInCheck(Black) == true);
-  CHECK(game.kingInCheck(White) == false);
+  CHECK(game.kingIsInCheck(Black) == true);
+  CHECK(game.kingIsInCheck(White) == false);
 }

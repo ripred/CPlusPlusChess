@@ -5,34 +5,32 @@
 
 #include "chessutil.h"
 namespace chess {
-  unsigned int getType(unsigned int b) { return Type & b; }
+  Piece getType(Piece b) { return Type & b; }
 
-  bool isEmpty(unsigned int b) { return getType(b) == Empty; }
+  bool isEmpty(Piece b) { return getType(b) == Empty; }
 
-  int getValue(unsigned int b) { return values[getType(b)]; }
+  int getValue(Piece b) { return values[getType(b)]; }
 
-  unsigned int getSide(unsigned int b) { return (Side & b) >> 4; }
+  Piece getSide(Piece b) { return (Side & b) >> 4u; }
 
-  bool hasMoved(unsigned int b) { return (Moved & b) == Moved; }
+  bool hasMoved(Piece b) { return (Moved & b) == Moved; }
 
-  bool inCheck(unsigned int b) { return (Check & b) == Check; }
+  bool inCheck(Piece b) { return (Check & b) == Check; }
 
-  unsigned int setType(unsigned int b, unsigned int type) { return (b & ~Type) | (type & Type); }
+  bool isPromoted(Piece b) { return (Promoted & b) == Promoted; }
 
-  unsigned int setSide(unsigned int b, unsigned int side) {
-    return (b & ~Side) | ((side << 4) & Side);
-  }
+  Piece setType(Piece b, Piece type) { return (b & ~Type) | (type & Type); }
 
-  unsigned int setMoved(unsigned int b, bool hasMoved) {
-    return (b & ~Moved) | (hasMoved ? Moved : 0);
-  }
+  Piece setSide(Piece b, Piece side) { return (b & ~Side) | ((side << 4u) & Side); }
 
-  unsigned int setCheck(unsigned int b, bool inCheck) {
-    return (b & ~Check) | (inCheck ? Check : 0);
-  }
+  Piece setMoved(Piece b, bool hasMoved) { return (b & ~Moved) | (hasMoved ? Moved : 0); }
 
-  unsigned int makeSpot(unsigned int type, unsigned int side, bool moved, bool inCheck) {
-    unsigned int b = 0;
+  Piece setCheck(Piece b, bool inCheck) { return (b & ~Check) | (inCheck ? Check : 0); }
+
+  Piece setPromoted(Piece b, bool promoted) { return (b & ~Promoted) | (promoted ? Promoted : 0); }
+
+  Piece makeSpot(Piece type, Piece side, bool moved, bool inCheck) {
+    Piece b = 0;
     b = setType(b, type);
     b = setSide(b, side);
     b = setMoved(b, moved);
@@ -40,16 +38,16 @@ namespace chess {
     return b;
   }
 
-  string getCoords(int index) { return coords[index]; }
+  string getCoords(int index) { return _coords[index]; }
 
   string getCoords(int file, int rank) { return getCoords(file + rank * 8); }
 
-  string getNotate(int index) { return notations[index]; }
+  string getNotate(int index) { return _notations[index]; }
 
   string getNotate(int file, int rank) { return getNotate(file + rank * 8); }
 
-  string getName(unsigned int b) { return names[getType(b)]; }
+  string getName(Piece b) { return _names[getType(b)]; }
 
-  string getColor(unsigned int b) { return chess::getSide(b) == White ? "White" : "Black"; }
+  string getColor(Piece b) { return chess::getSide(b) == White ? "White" : "Black"; }
 
 }  // namespace chess

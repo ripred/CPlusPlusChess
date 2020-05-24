@@ -17,71 +17,38 @@
 namespace chess {
   using std::map;
   using std::string;
+
   class MoveCache {
   public:
     struct Entry {
       Move move;
       int hit, changed;
-      Entry() : hit(1), changed(0) {}
+      explicit Entry(Move const& m = Move(), int h = 1, int c = 0) : move(m), hit(h), changed(c) {}
     };
 
   private:
     static char constexpr symbols[2][8]{{' ', 'P', 'R', 'N', 'B', 'Q', 'K', ' '},
                                         {' ', 'p', 'r', 'n', 'b', 'q', 'k', ' '}};
     static map<string, Entry> cache;
-    static float minRatio;
-    static int minHits;
+    static string createKey(const Board& board);
 
-    static string createKey(const Board& board) {
-      char key[BOARD_SIZE]{};
-      for (auto i = 0; i < BOARD_SIZE; ++i) {
-        unsigned int p = board.board[i];
-        key[i] = symbols[getSide(p)][getType(p)];
-      }
-      return string(key);
-    }
+    static int num_offered;
+    static int num_entries;
+    static int num_lookups;
+    static int num_changed;
+    static int num_found;
 
   public:
-    Move lookup(const Board& board) {
-      string key = createKey(board);
-      bool exists = false;
-      Entry hit;
+    Move lookup(const Board& board);
+    void offer(const Board& board, Move& move);
 
-      exists = cache.find(key) != cache.end();
-      if (!exists) {
-        return Move();
-      }
-      hit = cache[key];
-      float ratio = 1.0;
-      if (hit.changed > 0) {
-        ratio = float(hit.hit) / float(hit.changed);
-      }
-      if (hit.hit >= minHits && ratio >= minRatio) {
-        return hit.move;
-      }
-      return Move();
-    }
-
-    void offer(const Board& board, Move& move) {
-      if (!move.isValid(board)) return;
-      string key = createKey(board);
-      bool exists = cache.find(key) != cache.end();
-      bool add = false;
-      Entry hit;
-      if (exists) {
-        hit = cache[key];
-        if (move.getValue() > hit.move.getValue()) {
-          hit.move = move;
-          hit.changed++;
-          add = true;
-        }
-      } else {
-        add = true;
-      }
-      if (add) {
-        hit.hit++;
-        cache[key] = hit;
-      }
+    static void showMetrics() {
+      using std::cout, std::endl;
+      cout << "Offered: " << num_offered << endl;
+      cout << "Lookups: " << num_lookups << endl;
+      cout << "Changed: " << num_changed << endl;
+      cout << "Entries: " << num_entries << endl;
+      cout << "Found  : " << num_found << endl;
     }
   };
 }  // namespace chess

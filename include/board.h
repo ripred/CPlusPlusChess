@@ -11,20 +11,18 @@
 #include <cmath>
 #include <vector>
 
-using std::vector;
-
 namespace chess {
+  using std::vector;
+
   class Board {
   private:
   public:
-    unsigned int board[BOARD_SIZE]{};
-    vector<Move> moves1;
-    vector<Move> moves2;
-    vector<Move> history;
-    vector<unsigned int> taken1;
-    vector<unsigned int> taken2;
-    vector<unsigned int> pieces1;
-    vector<unsigned int> pieces2;
+    Piece board[BOARD_SIZE]{};
+    MoveList moves1;
+    MoveList moves2;
+    MoveList history;
+    PieceList taken1;
+    PieceList taken2;
     Move lastMove{0, 0, 0, 0, 0};
 
     int maxRep{};
@@ -39,24 +37,26 @@ namespace chess {
     Board& operator=(Board const& ref) = default;
 
     [[nodiscard]] bool isEmpty(int ndx) const;
-    [[nodiscard]] unsigned int getType(int ndx) const;
-    [[nodiscard]] unsigned int getSide(int ndx) const;
+    [[nodiscard]] Piece getType(int ndx) const;
+    [[nodiscard]] Piece getSide(int ndx) const;
     [[nodiscard]] bool hasMoved(int ndx) const;
     [[nodiscard]] int getValue(int ndx) const;
     [[nodiscard]] bool inCheck(int ndx) const;
-    void setType(int ndx, unsigned int type);
-    void setSide(int ndx, unsigned int side);
+    [[nodiscard]] bool isPromoted(int ndx) const;
+    void setType(int ndx, Piece type);
+    void setSide(int ndx, Piece side);
     void setMoved(int ndx, bool hasMoved);
     void setCheck(int ndx, bool inCheck);
+    void setPromoted(int ndx, bool promoted);
     static vector<string> to_string(Board const& b);
 
     void generateMoveLists();
 
     [[nodiscard]] bool checkDrawByRepetition(Move const& move, int maxRepetitions) const;
 
-    bool kingInCheck(unsigned int side);
+    [[nodiscard]] bool kingIsInCheck(Piece side) const;
 
-    void executeMove(Move const& move);
+    void executeMove(Move& move);
 
     /**
      * Advance the total number of moves in the game.
@@ -76,15 +76,15 @@ namespace chess {
      */
     void advanceTurn();
 
-    vector<Move> getMovesSorted(unsigned int side);
+    MoveList getMovesSorted(Piece side);
 
-    vector<Move> getMoves(unsigned int side, bool checkKing);
+    MoveList getMoves(Piece side, bool checkKing) const;
 
-    vector<Move> cleanupMoves(vector<Move>& moves, unsigned int side);
+    MoveList cleanupMoves(MoveList& moves, Piece side) const;
 
     static bool isValidSpot(int col, int row);
 
-    void addMoveIfValid(vector<Move>& moves, int fromCol, int fromRow, int toCol, int toRow) const;
+    void addMoveIfValid(MoveList& moves, int fromCol, int fromRow, int toCol, int toRow) const;
 
     /**
      * Get a list of all possible moves for a pawn at the given location on the board.
