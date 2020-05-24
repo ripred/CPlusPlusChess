@@ -33,7 +33,7 @@ namespace chess {
   int Move::getTo() const { return to; }
   int Move::getValue() const { return value; }
   Piece Move::getCaptured() const { return captured; }
-  bool Move::isCapture() const { return captured != Empty; };
+  bool Move::isCapture() const { return captured != Empty; }
 
   void Move::setValue(int val) { value = val; }
   void Move::setCaptured(Piece p) { captured = p; }
