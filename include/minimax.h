@@ -21,12 +21,12 @@ using std::cout, std::endl;
 #include <chrono>
 using std::chrono::steady_clock;
 
-#include <chessutil.h>
-#include <evaluator.h>
-#include <movecache.h>
 #include <bestmove.h>
 #include <board.h>
+#include <chessutil.h>
+#include <evaluator.h>
 #include <move.h>
+#include <movecache.h>
 
 namespace chess {
   class Minimax {

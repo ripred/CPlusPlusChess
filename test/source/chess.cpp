@@ -5,9 +5,9 @@
 #  include <sstream>
 #endif
 
+#include <board.h>
 #include <chessutil.h>
 #include <minimax.h>
-#include <board.h>
 #include <move.h>
 
 #include <algorithm>
