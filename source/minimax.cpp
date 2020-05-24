@@ -24,7 +24,6 @@
 #include <minimax.h>
 #include <movecache.h>
 
-#include <future>
 #include <memory>
 #include <mutex>
 #include <thread>

@@ -8,8 +8,6 @@
 #include <chessutil.h>
 #include <options.h>
 
-#include <string>
-
 using namespace chess;
 
 /**

@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <board.h>
-#include <chessutil.h>
 #include <move.h>
 
 namespace chess {

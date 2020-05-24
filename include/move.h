@@ -7,6 +7,8 @@
 #include <string>
 using std::string;
 
+#include <chessutil.h>
+
 namespace chess {
   class Board;
   class Move {

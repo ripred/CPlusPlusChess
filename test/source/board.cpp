@@ -5,21 +5,19 @@
 #  include <sstream>
 #endif
 
-#include <bestmove.h>
-#include <board.h>
 #include <chessutil.h>
-#include <evaluator.h>
 #include <minimax.h>
+#include <board.h>
 #include <move.h>
 
-#include <iostream>
-#include <string>
-
-using namespace chess;
-using MoveList = vector<Move>;
+#include <algorithm>
 using std::find;
 using std::get;
 using std::tuple;
+
+#include <string>
+
+using namespace chess;
 
 /**
  * display the current board state

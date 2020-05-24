@@ -5,31 +5,28 @@
 #  include <sstream>
 #endif
 
-#include <bestmove.h>
-#include <board.h>
 #include <chessutil.h>
-#include <evaluator.h>
 #include <minimax.h>
+#include <board.h>
 #include <move.h>
 
 #include <algorithm>
-#include <iostream>
-#include <string>
-
-using namespace chess;
 using std::find;
 using std::get;
 using std::tuple;
+
+#include <iostream>
+using std::cout;
+using std::endl;
+using std::string;
+
+using namespace chess;
 
 /**
  * display the current board state
  *
  */
 static void showBoard(Board& game) {
-  using std::cout;
-  using std::endl;
-  using std::string;
-
   cout << endl;
   cout << "Turn: " << game.turns << " ";
   cout << game.lastMove.to_string() << endl;

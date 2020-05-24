@@ -7,27 +7,28 @@
 #pragma once
 
 #include <map>
-#include <string>
-#include <vector>
-
 using std::map;
+
+#include <string>
 using std::string;
+
+#include <vector>
 using std::vector;
 
-#include <bestmove.h>
-#include <board.h>
-#include <chessutil.h>
-#include <evaluator.h>
-#include <move.h>
-#include <movecache.h>
-
-namespace chess {
 #include <iostream>
-  using std::cout, std::endl;
+using std::cout, std::endl;
 
 #include <chrono>
-  using std::chrono::steady_clock;
+using std::chrono::steady_clock;
 
+#include <chessutil.h>
+#include <evaluator.h>
+#include <movecache.h>
+#include <bestmove.h>
+#include <board.h>
+#include <move.h>
+
+namespace chess {
   class Minimax {
   public:
     steady_clock::time_point startTime;
