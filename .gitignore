@@ -11,3 +11,11 @@ cbs
 ts
 cts
 clean
+
+CPlusPlusChess.code-workspace
+standalone/.vscode/
+standalone/build/
+standalone/source/tempCodeRunnerFile.cpp
+test/.vscode/
+test/build/
+

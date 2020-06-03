@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <chessutil.h>
 #include <board.h>
+#include <chessutil.h>
 #include <move.h>
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace chess {
   using std::map;

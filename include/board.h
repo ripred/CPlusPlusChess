@@ -11,8 +11,8 @@
 #include <array>
 using std::array;
 
-#include <vector>
 #include <cmath>
+#include <vector>
 
 namespace chess {
   using std::vector;

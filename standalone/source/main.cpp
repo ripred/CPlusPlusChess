@@ -26,6 +26,10 @@ static void sig_handler(int);
 static Minimax agent;
 static Board game;
 
+#include <stdio.h>
+
+#include <algorithm>
+
 int main(int argc, char** argv) {
   signal(SIGINT, sig_handler);
 
