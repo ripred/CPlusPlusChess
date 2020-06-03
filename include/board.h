@@ -8,8 +8,11 @@
 #include <chessutil.h>
 #include <move.h>
 
-#include <cmath>
+#include <array>
+using std::array;
+
 #include <vector>
+#include <cmath>
 
 namespace chess {
   using std::vector;
@@ -17,7 +20,7 @@ namespace chess {
   class Board {
   private:
   public:
-    Piece board[BOARD_SIZE]{};
+    array<Piece, BOARD_SIZE> board;
     MoveList moves1;
     MoveList moves2;
     MoveList history;
@@ -25,11 +28,9 @@ namespace chess {
     PieceList taken2;
     Move lastMove{0, 0, 0, 0, 0};
 
-    int maxRep{};
+    int maxRep{3};
     unsigned int turns{};
-    unsigned int turn{};
-    int blkKingLoc{};
-    int whtKingLoc{};
+    unsigned int turn{White};
 
   public:
     Board();
@@ -52,7 +53,7 @@ namespace chess {
 
     void generateMoveLists();
 
-    [[nodiscard]] bool checkDrawByRepetition(Move const& move, int maxRepetitions) const;
+    [[nodiscard]] bool checkDrawByRepetition(Move const& move) const;
 
     [[nodiscard]] bool kingIsInCheck(Piece side) const;
 
@@ -76,9 +77,8 @@ namespace chess {
      */
     void advanceTurn();
 
-    MoveList getMovesSorted(Piece side);
-
-    MoveList getMoves(Piece side, bool checkKing) const;
+    [[nodiscard]] MoveList getMoves(Piece side, bool checkKing) const;
+    [[nodiscard]] MoveList getMovesSorted(Piece side) const;
 
     MoveList cleanupMoves(MoveList& moves, Piece side) const;
 

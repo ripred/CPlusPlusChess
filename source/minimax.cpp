@@ -83,9 +83,20 @@ namespace chess {
     agent.movesExamined += delta;
   }
 
-  // free-standing function to see if move search thread has reached the time limit
-  bool hasTimedOut(Minimax const& agent) {
+  /**
+   * free-standing function to see if move search thread has reached the time limit
+   *
+   * If time limits are in effect we distribute the allowed time non-linearly
+   * across the depths so that searches at the furthest depths time out sooner
+   * which allows more time for earlier depths to consider more results
+   *
+   */
+  bool hasTimedOut(Minimax const& agent, int currentDepth) {
     if (agent.timeout == 0) return false;
+
+    // always complete the first set of moves
+    if (currentDepth == agent.maxDepth) return false;
+
     std::chrono::duration<double> timeSpent = steady_clock::now() - agent.startTime;
     return timeSpent.count() >= agent.timeout;
   }
@@ -213,7 +224,7 @@ namespace chess {
     best = BestMove(maximize);
 
     for (Move move : board.moves1) {
-      if (hasTimedOut(*this)) return best.move;
+      if (hasTimedOut(*this, maxDepth)) return best.move;
 
       Board currentBoard(board);
       currentBoard.executeMove(move);
@@ -255,18 +266,6 @@ namespace chess {
     int value;
 
     for (auto& move : origBoard.moves1) {
-      if (hasTimedOut(*this)) {
-        // see if we have changed the best move from it's default (worst value for our side)
-        if ((maximize && mmBest.value == MIN_VALUE) || (!maximize && mmBest.value == MAX_VALUE)) {
-          // since our 'worst' move will be favored by our recursive caller do to the fact
-          // that their 'maximize' is equal to our !maximize, we will return 0 as a neutral
-          // value so that other positive or negative results from our other peer threads
-          // can override it if their results are better
-          return 0;
-        } else {
-          return mmBest.value;
-        }
-      }
       std::this_thread::yield();
 
       ///////////////////////////////////////////////////////////////////
@@ -282,6 +281,18 @@ namespace chess {
           updateNumMoves(*this, mmBest.movesExamined);
           return Evaluator::evaluate(origBoard);
         }
+      }
+
+      if (hasTimedOut(*this, depth)) {
+        // see if we have changed the best move from it's default (worst value for our side)
+        if ((maximize && mmBest.value == MIN_VALUE) || (!maximize && mmBest.value == MAX_VALUE)) {
+          // since our 'worst' move will be favored by our recursive caller do to the fact
+          // that their 'maximize' is equal to our !maximize, we will return 0 as a neutral
+          // value so that other positive or negative results from our other peer threads
+          // can override it if their results are better
+          return 0;
+        }
+        return mmBest.value;
       }
 
       Board currentBoard(origBoard);

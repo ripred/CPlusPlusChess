@@ -27,18 +27,11 @@ namespace chess {
 
   Move MoveCache::lookup(const Board& board) {
     string key = createKey(board);
-    bool exists = false;
-    Entry hit;
-
     ++num_lookups;
 
-    exists = (cache.find(key) != cache.end());
-    if (exists) {
-      ++num_found;
-      return cache[key].move;
-    } else {
-      return Move();
-    }
+    if (cache.find(key) == cache.end()) return Move();
+    ++num_found;
+    return cache[key].move;
   }
 
   void MoveCache::offer(const Board& board, Move& move) {

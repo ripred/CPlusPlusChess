@@ -35,11 +35,13 @@ int main(int argc, char** argv) {
   agent.useCache = options.getBool("cache", false);
   agent.useThreads = options.getBool("threads", true);
   agent.timeout = options.getInt("timeout", 10);
+  game.maxRep = options.getInt("maxrep", 3);
 
-  cout << "use threads   : " << agent.useThreads << endl;
-  cout << "use cache     : " << agent.useCache << endl;
-  cout << "max ply depth : " << agent.maxDepth << endl;
-  cout << "timeout       : " << agent.timeout << endl;
+  cout << "use threads     : " << agent.useThreads << endl;
+  cout << "use cache       : " << agent.useCache << endl;
+  cout << "max ply depth   : " << agent.maxDepth << endl;
+  cout << "timeout         : " << agent.timeout << endl;
+  cout << "max repetitions : " << game.maxRep << endl;
 
   playGame(game, agent);
 
@@ -103,14 +105,12 @@ static void showBoard(Board& board, Minimax const& minimax) {
 }
 
 static void playGame(Board& board, Minimax& minimax) {
-  static int const maxRepetitions = 3;
-
   showBoard(board, minimax);
 
   Move move = minimax.bestMove(board);
 
   while (move.isValid(board)) {
-    if (board.checkDrawByRepetition(move, maxRepetitions)) break;
+    if (board.checkDrawByRepetition(move)) break;
     board.executeMove(move);
     board.advanceTurn();
 
@@ -119,7 +119,7 @@ static void playGame(Board& board, Minimax& minimax) {
     move = minimax.bestMove(board);
   }
 
-  if (board.checkDrawByRepetition(move, maxRepetitions)) {
+  if (board.checkDrawByRepetition(move)) {
     cout << "Draw by repetition!" << endl;
   } else if (board.moves1.empty() && board.moves2.empty()) {
     cout << "Stalemate!" << endl;

@@ -24,13 +24,10 @@ using std::endl;
 
 namespace chess {
 
-  class Move;
-
   using Piece = unsigned int;
   using PieceList = vector<Piece>;
   using SidePieceMap = map<Piece, PieceList>;
   using PieceMap = map<Piece, SidePieceMap>;
-  using MoveList = vector<Move>;
 
   static string const _notations[64]{
       "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "a7", "b7", "c7", "d7", "e7",
@@ -49,8 +46,8 @@ namespace chess {
   static string const _names[7]{"Empty", "Pawn", "Knight", "Bishop", "Rook", "Queen", "King"};
 
   static int const BOARD_SIZE = 64;
-  static Piece const White = 1;
-  static Piece const Black = 0;
+  static Piece const White = 1u;
+  static Piece const Black = 0u;
 
   static int const MAX_VALUE = numeric_limits<signed int>::max() / 2;
   static int const MIN_VALUE = 0 - MAX_VALUE;
@@ -58,21 +55,21 @@ namespace chess {
   static int const values[7] = {0, 10000, 30000, 30000, 50000, 90000, MAX_VALUE};
 
   // Masks
-  static Piece const Type = 0x07;
+  static Piece const Type = 0x07u;
   // static Piece const Unused = 0x08;
-  static Piece const Side = 0x10;
-  static Piece const Moved = 0x20;
-  static Piece const Check = 0x40;
-  static Piece const Promoted = 0x80;
+  static Piece const Side = 0x10u;
+  static Piece const Moved = 0x20u;
+  static Piece const Check = 0x40u;
+  static Piece const Promoted = 0x80u;
 
-  static Piece const Empty = 0;
-  static Piece const Pawn = 1;
-  static Piece const Knight = 2;
-  static Piece const Bishop = 3;
-  static Piece const Rook = 4;
-  static Piece const Queen = 5;
-  static Piece const King = 6;
-  // static Piece const Marker = 7;
+  static Piece const Empty = 0u;
+  static Piece const Pawn = 1u;
+  static Piece const Knight = 2u;
+  static Piece const Bishop = 3u;
+  static Piece const Rook = 4u;
+  static Piece const Queen = 5u;
+  static Piece const King = 6u;
+  // static Piece const Marker = 7u;
 
   Piece getType(Piece b);
   bool isEmpty(Piece b);

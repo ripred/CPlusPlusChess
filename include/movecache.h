@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <board.h>
 #include <chessutil.h>
+#include <board.h>
 #include <move.h>
 
-#include <map>
 #include <string>
+#include <map>
 
 namespace chess {
   using std::map;
@@ -39,8 +39,8 @@ namespace chess {
     static int num_found;
 
   public:
-    Move lookup(const Board& board);
-    void offer(const Board& board, Move& move);
+    static Move lookup(const Board& board);
+    static void offer(const Board& board, Move& move);
 
     static void showMetrics() {
       using std::cout, std::endl;

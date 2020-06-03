@@ -31,8 +31,8 @@ void showBoard(Board& game) {
   cout << endl;
   cout << "Turn: " << game.turns << " ";
   cout << game.lastMove.to_string() << endl;
-  vector<string> lines = game.to_string(game);
-  for (auto line : lines) {
+  vector<string> lines = Board::to_string(game);
+  for (auto& line : lines) {
     cout << line << endl;
   }
   cout << endl;
@@ -103,6 +103,8 @@ void checkEnPassant(unsigned int side) {
         game.executeMove(move);
         size_t correctTaken = ((side == White) ? game.taken1.size() : game.taken2.size()) + 1;
         CHECK(numTaken + 1 == correctTaken);
+        CHECK(move.isCapture());
+        CHECK(chess::getType(move.getCaptured()) == Pawn);
       }
     }
   }
@@ -151,7 +153,7 @@ void checkCastle(unsigned int side) {
       game = current;  // restore board state
     }
   }
-  CHECK(castleCheck == true);
+  CHECK(castleCheck);
   castleCheck = false;
 
   // remove pieces between right rook and king
@@ -169,7 +171,7 @@ void checkCastle(unsigned int side) {
       castleCheck = true;
     }
   }
-  CHECK(castleCheck == true);
+  CHECK(castleCheck);
 }
 
 /**
@@ -182,8 +184,8 @@ TEST_CASE("chess::Board") {
 
   CHECK(game.board[0] == Rook);
 
-  CHECK(isEmpty(game.board[0]) == false);
-  CHECK(isEmpty(game.board[17]) == true);
+  CHECK(!isEmpty(game.board[0]));
+  CHECK(isEmpty(game.board[17]));
   CHECK(getValue(game.board[0]) == values[Rook]);
   CHECK(getValue(game.board[1]) == values[Knight]);
   CHECK(getValue(game.board[2]) == values[Bishop]);
@@ -193,21 +195,21 @@ TEST_CASE("chess::Board") {
   CHECK(getValue(game.board[63]) == values[Rook]);
   CHECK(getSide(game.board[0]) == Black);
   CHECK(getSide(game.board[63]) == White);
-  CHECK(hasMoved(game.board[0]) == false);
-  CHECK(inCheck(game.board[0]) == false);
+  CHECK(!hasMoved(game.board[0]));
+  CHECK(!inCheck(game.board[0]));
 
   // test copy constructor
   {
     Board game2(game);
-    CHECK(isEmpty(game2.board[0]) == false);
-    CHECK(isEmpty(game2.board[17]) == true);
+    CHECK(!isEmpty(game2.board[0]));
+    CHECK(isEmpty(game2.board[17]));
   }
 
   // test chessutil fascade
   CHECK(game.getType(0) == Rook);
   CHECK(game.getType(17) == Empty);
-  CHECK(game.isEmpty(0) == false);
-  CHECK(game.isEmpty(17) == true);
+  CHECK(!game.isEmpty(0));
+  CHECK(game.isEmpty(17));
   CHECK(game.getValue(0) == values[Rook]);
   CHECK(game.getValue(1) == values[Knight]);
   CHECK(game.getValue(2) == values[Bishop]);
@@ -217,8 +219,8 @@ TEST_CASE("chess::Board") {
   CHECK(game.getValue(63) == values[Rook]);
   CHECK(game.getSide(0) == Black);
   CHECK(game.getSide(63) == White);
-  CHECK(game.hasMoved(0) == false);
-  CHECK(game.inCheck(0) == false);
+  CHECK(!game.hasMoved(0));
+  CHECK(!game.inCheck(0));
 
   game.setType(0, Pawn);
   CHECK(game.getType(0) == Pawn);
@@ -229,13 +231,13 @@ TEST_CASE("chess::Board") {
   game.setType(0, Rook);
   CHECK(game.getType(0) == Rook);
   game.setCheck(0, true);
-  CHECK(game.inCheck(0) == true);
+  CHECK(game.inCheck(0));
   game.setMoved(0, true);
-  CHECK(game.hasMoved(0) == true);
+  CHECK(game.hasMoved(0));
   game.setCheck(0, true);
-  CHECK(game.inCheck(0) == true);
+  CHECK(game.inCheck(0));
 
-  vector<string> lines = game.to_string(game);
+  vector<string> lines = Board::to_string(game);
   vector<string> correct{"\"8  r  n  b  q  k  b  n  r \"", "\"7  p  p  p  p  p  p  p  p \"",
                          "\"6  .     .     .     .    \"", "\"5     .     .     .     . \"",
                          "\"4  .     .     .     .    \"", "\"3     .     .     .     . \"",
@@ -255,18 +257,18 @@ TEST_CASE("chess::Board") {
   // test piece moves on default constructor (new game)
 
   // test move primitives
-  CHECK(game.isValidSpot(0, 0) == true);
-  CHECK(game.isValidSpot(0, 7) == true);
-  CHECK(game.isValidSpot(7, 0) == true);
-  CHECK(game.isValidSpot(7, 7) == true);
-  CHECK(game.isValidSpot(0, 8) == false);
-  CHECK(game.isValidSpot(8, 0) == false);
-  CHECK(game.isValidSpot(8, 8) == false);
-  CHECK(game.isValidSpot(0, -1) == false);
-  CHECK(game.isValidSpot(-1, 0) == false);
-  CHECK(game.isValidSpot(-1, -1) == false);
-  CHECK(game.isValidSpot(8, -1) == false);
-  CHECK(game.isValidSpot(-1, 8) == false);
+  CHECK(game.isValidSpot(0, 0));
+  CHECK(game.isValidSpot(0, 7));
+  CHECK(game.isValidSpot(7, 0));
+  CHECK(game.isValidSpot(7, 7));
+  CHECK(!game.isValidSpot(0, 8));
+  CHECK(!game.isValidSpot(8, 0));
+  CHECK(!game.isValidSpot(8, 8));
+  CHECK(!game.isValidSpot(0, -1));
+  CHECK(!game.isValidSpot(-1, 0));
+  CHECK(!game.isValidSpot(-1, -1));
+  CHECK(!game.isValidSpot(8, -1));
+  CHECK(!game.isValidSpot(-1, 8));
 
   MoveList moves{};
 
@@ -365,14 +367,14 @@ TEST_CASE("chess::Board") {
   CHECK(game.moves2.size() == 20);
 
   // make the first 20 moves (10 successive turns for each side)
-  int expectedTurns = 20;
+  unsigned int expectedTurns = 20;
   bool drawByRepetition = false;
   game.generateMoveLists();
   for (int i = 0; i < 20; i++) {
-    if (game.moves1.size() > 0) {
+    if (!game.moves1.empty()) {
       game.executeMove(game.moves1[0]);
       game.advanceTurn();
-      drawByRepetition = game.checkDrawByRepetition(game.lastMove, 3);
+      drawByRepetition = game.checkDrawByRepetition(game.lastMove);
       if (drawByRepetition) {
         expectedTurns = game.turns;
         break;
@@ -416,12 +418,14 @@ TEST_CASE("chess::Board") {
   Move move = Move{4, 1, 4, 0, 0};
   game.executeMove(move);
   CHECK(game.getType(4 + 0 * 8) == Queen);
+  CHECK(game.isPromoted(4 + 0 * 8));
 
   game.board[4 + 6 * 8] = makeSpot(Pawn, Black);
   game.generateMoveLists();
   move = Move{4, 6, 4, 7, 0};
   game.executeMove(move);
   CHECK(game.getType(4 + 7 * 8) == Queen);
+  CHECK(game.isPromoted(4 + 7 * 8));
 
   // test that move returned immediately if it leaves opponent with no moves
   // White has queen at 4,0 (promoted from pawn)
@@ -437,8 +441,12 @@ TEST_CASE("chess::Board") {
   game.board[4 + 7 * 8] = Empty;
   game.turn = White;
   game.generateMoveLists();
-  CHECK(game.moves2.empty() == true);
+
+  // check that we left the opponent with no moves
+  CHECK(game.moves2.empty());
   game.turn = White;
   move = agent.bestMove(game);
+
+  // check that we searched fewer moves
   CHECK(agent.movesExamined < movesExamined);
 }

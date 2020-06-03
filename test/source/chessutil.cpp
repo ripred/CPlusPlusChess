@@ -19,10 +19,10 @@ using namespace chess;
  *
  */
 TEST_CASE("chess::chessutil") {
-  int const whitePawn = makeSpot(Pawn, White, false, false);
-  int const blackPawn = makeSpot(Pawn, Black, false, false);
-  int const movedWhitePawn = setCheck(setMoved(whitePawn, true), true);
-  int const movedBlackPawn = setCheck(setMoved(blackPawn, true), true);
+  Piece const whitePawn = Promoted | makeSpot(Pawn, White, false, false);
+  Piece const blackPawn = makeSpot(Pawn, Black, false, false);
+  Piece const movedWhitePawn = setCheck(setMoved(whitePawn, true), true);
+  Piece const movedBlackPawn = setCheck(setMoved(blackPawn, true), true);
 
   CHECK(getType(whitePawn) == Pawn);
   CHECK(getType(blackPawn) == Pawn);
@@ -32,15 +32,15 @@ TEST_CASE("chess::chessutil") {
   CHECK(getType(Queen) == Queen);
   CHECK(getType(King) == King);
 
-  CHECK(isEmpty(0) == true);
-  CHECK(isEmpty(Empty) == true);
-  CHECK(isEmpty(whitePawn) == false);
-  CHECK(isEmpty(blackPawn) == false);
-  CHECK(isEmpty(Rook) == false);
-  CHECK(isEmpty(Knight) == false);
-  CHECK(isEmpty(Bishop) == false);
-  CHECK(isEmpty(Queen) == false);
-  CHECK(isEmpty(King) == false);
+  CHECK(isEmpty(0));
+  CHECK(isEmpty(Empty));
+  CHECK(!isEmpty(whitePawn));
+  CHECK(!isEmpty(blackPawn));
+  CHECK(!isEmpty(Rook));
+  CHECK(!isEmpty(Knight));
+  CHECK(!isEmpty(Bishop));
+  CHECK(!isEmpty(Queen));
+  CHECK(!isEmpty(King));
 
   CHECK(getValue(whitePawn) == values[Pawn]);
   CHECK(getValue(blackPawn) == values[Pawn]);
@@ -53,15 +53,15 @@ TEST_CASE("chess::chessutil") {
   CHECK(getSide(whitePawn) == 1);
   CHECK(getSide(blackPawn) == 0);
 
-  CHECK(hasMoved(whitePawn) == false);
-  CHECK(hasMoved(blackPawn) == false);
-  CHECK(hasMoved(movedWhitePawn) == true);
-  CHECK(hasMoved(movedBlackPawn) == true);
+  CHECK(!hasMoved(whitePawn));
+  CHECK(!hasMoved(blackPawn));
+  CHECK(hasMoved(movedWhitePawn));
+  CHECK(hasMoved(movedBlackPawn));
 
-  CHECK(inCheck(whitePawn) == false);
-  CHECK(inCheck(blackPawn) == false);
-  CHECK(inCheck(movedWhitePawn) == true);
-  CHECK(inCheck(movedBlackPawn) == true);
+  CHECK(!inCheck(whitePawn));
+  CHECK(!inCheck(blackPawn));
+  CHECK(inCheck(movedWhitePawn));
+  CHECK(inCheck(movedBlackPawn));
 
   CHECK(setType(Empty, Pawn) == getType(whitePawn));
   CHECK(setType(Empty, Pawn) == getType(blackPawn));
@@ -84,4 +84,7 @@ TEST_CASE("chess::chessutil") {
   CHECK(getName(King) == string("King"));
   CHECK(getColor(whitePawn) == string("White"));
   CHECK(getColor(blackPawn) == string("Black"));
+
+  CHECK(setPromoted(blackPawn, true) == (blackPawn | Promoted));
+  CHECK(isPromoted(whitePawn));
 }

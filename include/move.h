@@ -5,46 +5,66 @@
 #pragma once
 
 #include <string>
+
 using std::string;
 
 #include <chessutil.h>
 
 namespace chess {
-  class Board;
-  class Move {
-  private:
-    Piece captured;
-    int fromCol;
-    int fromRow;
-    int toCol;
-    int toRow;
-    int from;
-    int to;
-    int value;
+    class Board;
 
-  public:
-    Move();
-    Move(int fromCol, int fromRow, int toCol, int toRow, int value);
-    Move(Move const& ref) = default;
-    Move& operator=(Move const& ref) = default;
-    bool operator==(Move const& move) const;
+    class Move;
+    class Move {
+    private:
+        Piece captured;
+        int fromCol;
+        int fromRow;
+        int toCol;
+        int toRow;
+        int from;
+        int to;
+        int value;
 
-    [[nodiscard]] int getFromCol() const;
-    [[nodiscard]] int getFromRow() const;
-    [[nodiscard]] int getToCol() const;
-    [[nodiscard]] int getToRow() const;
-    [[nodiscard]] int getFrom() const;
-    [[nodiscard]] int getTo() const;
-    [[nodiscard]] int getValue() const;
-    [[nodiscard]] Piece getCaptured() const;
-    [[nodiscard]] bool isCapture() const;
+    public:
+        Move();
 
-    void setValue(int value);
-    void setCaptured(Piece p);
+        Move(int fromCol, int fromRow, int toCol, int toRow, int value);
 
-    [[nodiscard]] bool isValid() const;
-    [[nodiscard]] bool isValid(Board const& board) const;
+        Move(Move const &ref) = default;
 
-    [[nodiscard]] string to_string(unsigned int flag = 0b111) const;
-  };
+        Move &operator=(Move const &ref) = default;
+
+        bool operator==(Move const &move) const;
+
+        [[nodiscard]] int getFromCol() const;
+
+        [[nodiscard]] int getFromRow() const;
+
+        [[nodiscard]] int getToCol() const;
+
+        [[nodiscard]] int getToRow() const;
+
+        [[nodiscard]] int getFrom() const;
+
+        [[nodiscard]] int getTo() const;
+
+        [[nodiscard]] int getValue() const;
+
+        [[nodiscard]] Piece getCaptured() const;
+
+        [[nodiscard]] bool isCapture() const;
+
+        void setValue(int value);
+
+        void setCaptured(Piece p);
+
+        [[nodiscard]] bool isValid() const;
+
+        [[nodiscard]] bool isValid(Board const &board) const;
+
+        [[nodiscard]] string to_string(unsigned int flag = 0b111) const;
+    };
+
+    using MoveList = vector<Move>;
+
 }  // namespace chess
