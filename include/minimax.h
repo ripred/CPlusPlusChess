@@ -32,7 +32,6 @@ namespace chess {
   class Minimax {
   public:
     steady_clock::time_point startTime;
-    static MoveCache cache;
     long movesExamined;
     bool useThreads;
     int qMaxDepth;

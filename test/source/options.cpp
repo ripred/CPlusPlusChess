@@ -37,7 +37,7 @@ TEST_CASE("chess::Options") {
 
   CHECK(options.get("string_val") == "string_value");
   CHECK(options.getInt("int_val") == 123456);
-  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.789f);
+  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
   CHECK(options.getBool("bool_val") /* == true*/);
   CHECK(options.exists("trailing_val") /* == true*/);
 
@@ -46,7 +46,7 @@ TEST_CASE("chess::Options") {
   options.read("options.txt");
   CHECK(options.get("string_val") == "string_value");
   CHECK(options.getInt("int_val") == 123456);
-  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.789f);
+  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
   CHECK(options.getBool("bool_val") /* == true*/);
 
   options.clear();

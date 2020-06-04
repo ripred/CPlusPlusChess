@@ -24,61 +24,67 @@
 #include <minimax.h>
 #include <movecache.h>
 
+#include <deque>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <thread>
 
+using std::async;
+using std::deque;
+using std::future;
 using std::mutex;
 using std::thread;
 using std::this_thread::yield;
 
 #include <chrono>
+
 using std::chrono::steady_clock;
 
 namespace chess {
 
-  MoveCache Minimax::cache;
-
   struct ThreadArgs {
-    Board const& board;
-    Move const& move;
-    Minimax& agent;
+    Board const &board;
+    Move const &move;
+    Minimax &agent;
     int depth;
     bool maximize;
-    size_t id;
 
     ThreadArgs() = delete;
-    ThreadArgs(Board const& b, Move const& m, Minimax& mm, int d, bool max, size_t tid)
-        : board(b), move(m), agent(mm), depth(d), maximize(max), id(tid) {}
+
+    ThreadArgs(Board const &b, Move const &m, Minimax &mm, int d, bool max)
+        : board(b), move(m), agent(mm), depth(d), maximize(max) {}
   };
 
   struct ThreadResult {
     int value;
     Move move;
+
     ThreadResult() { value = 0; }
-    ThreadResult(int const i, Move const& m) : value(i), move(m) {}
+
+    ThreadResult(int const i, Move const &m) : value(i), move(m) {}
   };
 
   using std::mutex;
   using std::thread;
 
-  map<size_t, ThreadResult> threadResults;
-  vector<std::thread> threads;
   std::mutex lock1;
 
   class ScopedLock {
   private:
     std::mutex mut;
-    std::mutex& ref{mut};
+    std::mutex &ref{mut};
 
   public:
     ScopedLock() = delete;
-    explicit ScopedLock(std::mutex& m) : ref(m) { ref.lock(); }
+
+    explicit ScopedLock(std::mutex &m) : ref(m) { ref.lock(); }
+
     virtual ~ScopedLock() { ref.unlock(); }
   };
 
   // free-standing function to atomically update the number of moves evaluated
-  void updateNumMoves(Minimax& agent, int delta) {
+  void updateNumMoves(Minimax &agent, int delta) {
     ScopedLock sl(lock1);
     agent.movesExamined += delta;
   }
@@ -91,7 +97,7 @@ namespace chess {
    * which allows more time for earlier depths to consider more results
    *
    */
-  bool hasTimedOut(Minimax const& agent, int currentDepth) {
+  bool hasTimedOut(Minimax const &agent, int currentDepth) {
     if (agent.timeout == 0) return false;
 
     // always complete the first set of moves
@@ -108,7 +114,7 @@ namespace chess {
     timeout = 0;
   }
 
-  Move Minimax::bestMove(Board const& board) {
+  Move Minimax::bestMove(Board const &board) {
     bool const maximize = (board.turn == White);
     best = BestMove(maximize);
     movesExamined = 0L;
@@ -126,7 +132,7 @@ namespace chess {
 
     if (useCache) {
       ScopedLock scopedLock(lock1);
-      auto move = cache.lookup(board);
+      auto move = MoveCache::lookup(board);
       if (move.isValid(board)) {
         return move;
       }
@@ -147,20 +153,17 @@ namespace chess {
 
     if (useCache && move.isValid(board)) {
       ScopedLock scopedLock(lock1);
-      cache.offer(board, move);
+      MoveCache::offer(board, move);
     }
 
     return move;
   }
 
-  void* threadFunc(void* ptr) {
-    auto* pArgs = static_cast<ThreadArgs*>(ptr);
-
+  ThreadResult threadFunc(ThreadArgs *pArgs) {
     Move move = pArgs->move;
-    size_t id = pArgs->id;
     bool maximize = pArgs->maximize;
     int depth = pArgs->depth;
-    Minimax& agent = pArgs->agent;
+    Minimax &agent = pArgs->agent;
     Board board = pArgs->board;
     delete pArgs;
 
@@ -169,43 +172,50 @@ namespace chess {
     updateNumMoves(agent, 1);
 
     int value = agent.minmax(board, MIN_VALUE, MAX_VALUE, depth, maximize);
-    ThreadResult result(value, move);
-
-    {
-      ScopedLock scopeLock(lock1);
-      threadResults[id] = result;
-    }
-
-    return nullptr;
+    return ThreadResult(value, move);
   }
 
-  Move Minimax::searchWithThreads(Board const& board, bool maximize, PieceMap& pieceMap) {
-    UNUSED(pieceMap);
+  Move Minimax::searchWithThreads(Board const &board, bool maximize, PieceMap & /* pieceMap */) {
     best = BestMove(maximize);
 
-    threadResults.clear();
-    threads.clear();
+    vector<ThreadResult> threadResults;
+    deque<future<ThreadResult>> futures;
 
-    size_t count = board.moves1.size();
-    for (size_t i = 0; i < count; ++i) {
-      Move const& move = board.moves1[i];
-      threads.emplace_back(threadFunc, new ThreadArgs(board, move, *this, maxDepth, !maximize, i));
-    }
-
-    for (size_t i = 0; i < count; ++i) {
-      threads[i].join();
-    }
-
-    for (size_t i = 0; i < count; ++i) {
-      ThreadResult const& result = threadResults[i];
-
-      if (result.move.isValid(board)) {
-        if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
-          best = BestMove(result.move, result.value);
+    // This functor will wait on the first thread, process it,
+    // and remove it from the front of the deque.
+    auto waitForNextResult = [&board, &maximize, this, &futures]() {
+      if (!futures.empty()) {
+        ThreadResult const result = futures.front().get();
+        futures.pop_front();
+        if (result.move.isValid(board)) {
+          if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
+            best = BestMove(result.move, result.value);
+          }
         }
       }
+    };
+
+    unsigned int core_count = std::thread::hardware_concurrency();
+
+    /// Number of cpu cores to leave out of the pool.
+    /// Note that if it is equal to or greater than
+    /// the number of available cores then the program
+    /// is effectively single threaded.
+    const unsigned int reserve = 0;
+    if (core_count >= reserve) {
+      core_count -= reserve;
     }
 
+    for (Move const &m : board.moves1) {
+      while (futures.size() > core_count) {
+        waitForNextResult();
+      }
+      futures.emplace_back(future<ThreadResult>(async(
+          std::launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
+    }
+    while (!futures.empty()) {
+      waitForNextResult();
+    }
     return best.move;
   }
 
@@ -217,10 +227,9 @@ namespace chess {
    * @param pieceMap board pieces mapped by type and side
    * @return the best move for this board
    */
-  Move Minimax::searchWithNoThreads(Board const& board, bool maximize, PieceMap& pieceMap) {
+  Move Minimax::searchWithNoThreads(Board const &board, bool maximize, PieceMap & /* pieceMap */) {
     // We are not using threads.
     // Walk through all moves and find the best and return it in this calling thread.
-    UNUSED(pieceMap);
     best = BestMove(maximize);
 
     for (Move move : board.moves1) {
@@ -261,11 +270,11 @@ namespace chess {
    * @return the best score this move (and all consequential response/exchanges up to the allowed
    *         look-ahead depth or time limit for searching).
    */
-  int Minimax::minmax(Board& origBoard, int alpha, int beta, int depth, bool maximize) {
+  int Minimax::minmax(Board &origBoard, int alpha, int beta, int depth, bool maximize) {
     BestMove mmBest(maximize);
     int value;
 
-    for (auto& move : origBoard.moves1) {
+    for (auto &move : origBoard.moves1) {
       std::this_thread::yield();
 
       ///////////////////////////////////////////////////////////////////

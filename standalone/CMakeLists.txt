@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 project(ChessStandalone
   LANGUAGES CXX
 )
+SET(CMAKE_CXX_STANDARD 17)
+
+find_package (Threads)
 
 # ---- Dependencies ----
 
@@ -27,10 +30,11 @@ CPMAddPackage(
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
 add_executable(ChessStandalone ${sources})
+#target_link_libraries(ChessStandalone PUBLIC Threads::Threads cxxopts -g)
 
 set_target_properties(ChessStandalone PROPERTIES 
   CXX_STANDARD 17 
   OUTPUT_NAME "chess"
 )
 
-target_link_libraries(ChessStandalone chess cxxopts -g -pthread -lpthread)
+target_link_libraries(ChessStandalone PUBLIC chess Threads::Threads cxxopts -g -pthread -lpthread)

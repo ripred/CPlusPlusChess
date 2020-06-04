@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 project(ChessTests
   LANGUAGES CXX
 )
+SET(CMAKE_CXX_STANDARD 17)
+
+find_package (Threads)
+
 
 # ---- Options ----
 
@@ -66,5 +70,5 @@ doctest_discover_tests(ChessTests)
 
 if (ENABLE_TEST_COVERAGE)
 	target_compile_options(chess PUBLIC -g -pthread -lpthread -fprofile-arcs -ftest-coverage)
-	target_link_options(chess PUBLIC -g -lpthread -pthread -fprofile-arcs -ftest-coverage)
+	target_link_options(chess PUBLIC -g Threads::Threads -lpthread -pthread -fprofile-arcs -ftest-coverage)
 endif()
