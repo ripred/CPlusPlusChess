@@ -3,14 +3,9 @@
 //
 
 #include <board.h>
-#include <move.h>
-
-#include <string>
-using std::string;
-#include <iostream>
-using std::cout, std::cerr, std::endl;
 
 namespace chess {
+  using std::to_string;
   Move::Move()
       : captured(Empty), fromCol(0), fromRow(0), toCol(0), toRow(0), from(0), to(0), value(0) {}
 
@@ -40,7 +35,6 @@ namespace chess {
 
   bool Move::operator==(Move const& move) const {
     if (this == &move) return true;
-    //    return from == move.from && to == move.to && value == move.value;
     return from == move.from && to == move.to;
   }
 

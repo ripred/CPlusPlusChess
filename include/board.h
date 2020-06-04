@@ -20,7 +20,7 @@ namespace chess {
   class Board {
   private:
   public:
-    array<Piece, BOARD_SIZE> board;
+    array<Piece, BOARD_SIZE> board{};
     MoveList moves1;
     MoveList moves2;
     MoveList history;

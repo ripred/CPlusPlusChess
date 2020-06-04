@@ -5,7 +5,6 @@
 #  include <sstream>
 #endif
 
-#include <chessutil.h>
 #include <options.h>
 
 using namespace chess;

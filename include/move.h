@@ -62,7 +62,7 @@ namespace chess {
 
     [[nodiscard]] bool isValid(Board const &board) const;
 
-    [[nodiscard]] string to_string(unsigned int flag = 0b111) const;
+    [[nodiscard]] string to_string(unsigned int flag = 0b111u) const;
   };
 
   using MoveList = vector<Move>;

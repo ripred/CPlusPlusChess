@@ -3,7 +3,7 @@
  * of a chess piece using one byte to represent the piece
  */
 
-#include "chessutil.h"
+#include <chessutil.h>
 
 namespace chess {
   Piece getType(Piece b) { return Type & b; }

@@ -7,16 +7,8 @@
 
 #include <bestmove.h>
 #include <board.h>
-#include <chessutil.h>
-#include <evaluator.h>
-#include <minimax.h>
-#include <move.h>
-
-#include <iostream>
-#include <string>
 
 using namespace chess;
-using MoveList = vector<Move>;
 using std::find;
 using std::get;
 using std::tuple;

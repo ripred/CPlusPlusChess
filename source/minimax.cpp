@@ -22,13 +22,9 @@
  */
 
 #include <minimax.h>
-#include <movecache.h>
 
 #include <deque>
 #include <future>
-#include <memory>
-#include <mutex>
-#include <thread>
 
 using std::async;
 using std::deque;
@@ -36,8 +32,6 @@ using std::future;
 using std::mutex;
 using std::thread;
 using std::this_thread::yield;
-
-#include <chrono>
 
 using std::chrono::steady_clock;
 

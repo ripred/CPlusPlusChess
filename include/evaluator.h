@@ -16,13 +16,13 @@ namespace chess {
     static unsigned int const MOBILE = 0x04u;
 
     // material values
-    static int materialEvaluator(unsigned int p);
+    static int materialEvaluator(Piece p);
 
     // center location bonus
-    static int centerEvaluator(int ndx, unsigned int p);
+    static int centerEvaluator(int location, Piece piece);
 
     static int evaluate(Board const& board);
 
-    static int evaluate(Board const& board, int with);
+    static int evaluate(Board const& board, unsigned filter);
   };
 }  // namespace chess

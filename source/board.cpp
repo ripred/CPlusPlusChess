@@ -1,19 +1,18 @@
-//
-// board.cpp
-// properties and methods for managing a chess board
-//
+//!
+//! board.cpp
+//! properties and methods for managing a chess board
+//!
 
 #include <board.h>
-
-#include <algorithm>
-#include <string>
 
 using std::toupper;
 using std::transform;
 
 namespace chess {
   Board::Board() {
+    board = array<Piece, BOARD_SIZE>();
     board.fill(Empty);
+
     board[0 + 0 * 8] = makeSpot(Rook, Black);
     board[1 + 0 * 8] = makeSpot(Knight, Black);
     board[2 + 0 * 8] = makeSpot(Bishop, Black);
@@ -259,7 +258,7 @@ namespace chess {
     MoveList moves = getMoves(side, true);
     // sort in descending order by move value
     sort(moves.begin(), moves.end(),
-         [](const auto &m1, const auto &m2) { return m1.getValue() > m2.getValue(); });
+         [](Move const &m1, Move const &m2) { return m1.getValue() > m2.getValue(); });
     return moves;
   }
 
