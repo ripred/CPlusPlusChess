@@ -5,8 +5,10 @@
 
 #include <board.h>
 
+#include <algorithm>
+
+using std::find;
 using std::toupper;
-using std::transform;
 
 namespace chess {
   Board::Board() {
