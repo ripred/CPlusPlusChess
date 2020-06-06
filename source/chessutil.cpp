@@ -10,7 +10,7 @@ namespace chess {
 
   bool isEmpty(Piece b) { return getType(b) == Empty; }
 
-  int getValue(Piece b) { return values[getType(b)]; }
+  int getValue(Piece b) { return pieceValues[getType(b)]; }
 
   Piece getSide(Piece b) { return (Side & b) >> 4u; }
 
@@ -70,5 +70,29 @@ namespace chess {
   }
 
   string getColor(Piece b) { return chess::getSide(b) == White ? "White" : "Black"; }
+
+  ScopedLock::ScopedLock(mutex &m) : ref(m) { ref.lock(); }
+  ScopedLock::~ScopedLock() { ref.unlock(); }
+
+  string addCommas(long int value) {
+    string str = to_string(value);
+    unsigned long numDigits = str.size();
+    if (numDigits < 4) return str;
+
+    string withCommas;
+    unsigned long insertWhen0 = numDigits % 3;
+    // if insertWhen0 starts at 0 we could put a leading comma before any digits so reset before we
+    // start
+    if (insertWhen0 == 0) insertWhen0 = 3;
+    for (auto it = begin(str); it != end(str); it++) {
+      if (insertWhen0 == 0) {
+        withCommas += ',';
+        insertWhen0 = 3;
+      }
+      insertWhen0--;
+      withCommas.insert(end(withCommas), it, it + 1);
+    }
+    return withCommas;
+  }
 
 }  // namespace chess

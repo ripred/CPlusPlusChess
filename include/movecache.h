@@ -12,25 +12,30 @@
 #include <move.h>
 
 #include <map>
+#include <mutex>
 #include <string>
 
 namespace chess {
   using std::map;
+  using std::mutex;
   using std::string;
 
   class MoveCache {
-  public:
+  private:
     struct Entry {
-      Move move;
       int hit, changed;
-      explicit Entry(Move const& m = Move(), int h = 1, int c = 0) : move(m), hit(h), changed(c) {}
+      Move move;
+
+      explicit Entry(Move const &m = Move(), int h = 1, int c = 0) : hit(h), changed(c), move(m) {}
     };
 
-  private:
-    static char constexpr symbols[2][8]{{' ', 'P', 'R', 'N', 'B', 'Q', 'K', ' '},
-                                        {' ', 'p', 'r', 'n', 'b', 'q', 'k', ' '}};
-    static map<string, Entry> cache;
-    static string createKey(const Board& board);
+    using SideMapType = map<string, Entry>;
+    using MoveCacheType = map<unsigned int, SideMapType>;
+
+    static MoveCacheType cache;
+    static mutex cacheMutex;
+
+    static string createKey(const Board &board);
 
     static int num_offered;
     static int num_entries;
@@ -39,16 +44,9 @@ namespace chess {
     static int num_found;
 
   public:
-    static Move lookup(const Board& board);
-    static void offer(const Board& board, Move& move);
-
-    static void showMetrics() {
-      using std::cout, std::endl;
-      cout << "Offered: " << num_offered << endl;
-      cout << "Lookups: " << num_lookups << endl;
-      cout << "Changed: " << num_changed << endl;
-      cout << "Entries: " << num_entries << endl;
-      cout << "Found  : " << num_found << endl;
-    }
+    static Move lookup(const Board &board, unsigned int side);
+    static void offer(const Board &board, Move &move, unsigned int side);
+    static void showMetrics();
   };
+
 }  // namespace chess

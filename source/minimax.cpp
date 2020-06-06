@@ -21,65 +21,29 @@
  *          * chess, checkers &c.  Basically any board game that is turn-based
  */
 
+#include <evaluator.h>
 #include <minimax.h>
+#include <movecache.h>
 
 #include <deque>
 #include <future>
-
-using std::async;
-using std::deque;
-using std::future;
-using std::mutex;
-using std::thread;
-using std::this_thread::yield;
-
-using std::chrono::steady_clock;
+#include <mutex>
 
 namespace chess {
-
-  struct ThreadArgs {
-    Board const &board;
-    Move const &move;
-    Minimax &agent;
-    int depth;
-    bool maximize;
-
-    ThreadArgs() = delete;
-
-    ThreadArgs(Board const &b, Move const &m, Minimax &mm, int d, bool max)
-        : board(b), move(m), agent(mm), depth(d), maximize(max) {}
-  };
-
-  struct ThreadResult {
-    int value;
-    Move move;
-
-    ThreadResult() { value = 0; }
-
-    ThreadResult(int const i, Move const &m) : value(i), move(m) {}
-  };
-
-  using std::mutex;
+  using std::async;
+  using std::deque;
+  using std::future;
+  using std::launch;
   using std::thread;
+  using std::chrono::duration;
+  using std::chrono::steady_clock;
+  using std::this_thread::yield;
 
-  std::mutex lock1;
-
-  class ScopedLock {
-  private:
-    std::mutex mut;
-    std::mutex &ref{mut};
-
-  public:
-    ScopedLock() = delete;
-
-    explicit ScopedLock(std::mutex &m) : ref(m) { ref.lock(); }
-
-    virtual ~ScopedLock() { ref.unlock(); }
-  };
+  mutex examinedMutex;
 
   // free-standing function to atomically update the number of moves evaluated
   void updateNumMoves(Minimax &agent, int delta) {
-    ScopedLock sl(lock1);
+    ScopedLock sl(examinedMutex);
     agent.movesExamined += delta;
   }
 
@@ -97,7 +61,7 @@ namespace chess {
     // always complete the first set of moves
     if (currentDepth == agent.maxDepth) return false;
 
-    std::chrono::duration<double> timeSpent = steady_clock::now() - agent.startTime;
+    duration<double> timeSpent = steady_clock::now() - agent.startTime;
     return timeSpent.count() >= agent.timeout;
   }
 
@@ -125,8 +89,8 @@ namespace chess {
     startTime = steady_clock::now();
 
     if (useCache) {
-      ScopedLock scopedLock(lock1);
-      auto move = MoveCache::lookup(board);
+      ScopedLock scopedLock(examinedMutex);
+      auto move = MoveCache::lookup(board, board.turn);
       if (move.isValid(board)) {
         return move;
       }
@@ -146,8 +110,8 @@ namespace chess {
                            : searchWithNoThreads(board, maximize, pieceMap);
 
     if (useCache && move.isValid(board)) {
-      ScopedLock scopedLock(lock1);
-      MoveCache::offer(board, move);
+      ScopedLock scopedLock(examinedMutex);
+      MoveCache::offer(board, move, board.turn);
     }
 
     return move;
@@ -189,7 +153,7 @@ namespace chess {
       }
     };
 
-    unsigned int core_count = std::thread::hardware_concurrency();
+    unsigned int core_count = thread::hardware_concurrency();
 
     /// Number of cpu cores to leave out of the pool.
     /// Note that if it is equal to or greater than
@@ -204,8 +168,8 @@ namespace chess {
       while (futures.size() > core_count) {
         waitForNextResult();
       }
-      futures.emplace_back(future<ThreadResult>(async(
-          std::launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
+      futures.emplace_back(future<ThreadResult>(
+          async(launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
     }
     while (!futures.empty()) {
       waitForNextResult();
@@ -267,9 +231,12 @@ namespace chess {
   int Minimax::minmax(Board &origBoard, int alpha, int beta, int depth, bool maximize) {
     BestMove mmBest(maximize);
     int value;
+    bool gotCacheHit = false;
+    Move check;
+    int cachedValue = mmBest.value;
 
     for (auto &move : origBoard.moves1) {
-      std::this_thread::yield();
+      yield();
 
       ///////////////////////////////////////////////////////////////////
       // See if we are at the end of our allowed depth to search and if so,
@@ -298,28 +265,72 @@ namespace chess {
         return mmBest.value;
       }
 
-      Board currentBoard(origBoard);
-      currentBoard.executeMove(move);
-      currentBoard.advanceTurn();
-      mmBest.movesExamined++;
+      ///////////////////////////////////////////////////////////////////
+      // Before we try to find our own best move for this board state, see
+      // if one is already cached:
 
-      // See if the move we just made leaves the other player with no moves
-      // and if so, return it as the best value we'll ever see on this search:
-      if (currentBoard.moves1.empty()) {
-        mmBest.move = move;
-        mmBest.value = maximize ? MAX_VALUE - (100 - depth) : MIN_VALUE + (100 - depth);
-        break;
+      gotCacheHit = false;
+      check = Move();
+
+      // We force moves to be manually evaluated via minmax when we get
+      // down to the end game.
+      if (origBoard.moves1.size() > 5) {
+        check = MoveCache::lookup(origBoard, origBoard.turn);
       }
 
-      // The recursive minimax step
-      // While we have the depth keep looking ahead to see what this move accomplishes
-      value = minmax(currentBoard, alpha, beta, depth - 1, !maximize);
+      if (check.isValid()) {
+        gotCacheHit = true;
+        cachedValue = check.getValue();
+        value = check.getValue();
+      }
 
-      // See if this move is better than any we've seen for this board:
-      //
-      if ((!maximize && value < mmBest.value) || (maximize && value > mmBest.value)) {
-        mmBest.value = value;
-        mmBest.move = move;
+      // TODO: Implement after base MoveCache has been fleshed out
+      //          if (check.isValid()) {
+      //              double moveRisk = cachedMoves.getMoveRisk(origBoard.board);
+      //              if (moveRisk > acceptableRiskLevel) {
+      //                  // The risk is too high so we will do this manually and increase the count
+      //                  // of how many times we have rechecked this move for this board
+      //                  cachedMoves.increaseMoveUsedCount(origBoard.board);
+      //                  check = Move();
+      //              }
+      //          }
+
+      if (!check.isValid()) {
+        // We did not get a cached move so evaluate this one fresh
+
+        Board currentBoard(origBoard);
+        currentBoard.executeMove(move);
+        currentBoard.advanceTurn();
+        mmBest.movesExamined++;
+
+        // See if the move we just made leaves the other player with no moves
+        // and if so, return it as the best value we'll ever see on this search:
+        if (currentBoard.moves1.empty()) {
+          mmBest.move = move;
+          mmBest.value = maximize ? MAX_VALUE - (100 - depth) : MIN_VALUE + (100 - depth);
+          break;
+        }
+
+        // The recursive minimax step
+        // While we have the depth keep looking ahead to see what this move accomplishes
+        value = minmax(currentBoard, alpha, beta, depth - 1, !maximize);
+
+        // See if this move is better than any we've seen for this board:
+        //
+        if ((!maximize && value < mmBest.value) || (maximize && value > mmBest.value)) {
+          mmBest.value = value;
+          mmBest.move = move;
+
+          MoveCache::offer(origBoard, move, origBoard.turn);
+        }
+
+        // TODO: Implement after base MoveCache has been fleshed out
+        // See if we had a cache hit but ran it anyway, and whether this improved the existing move
+        //              if (((maximize && lookAheadValue > cachedValue) || (!maximize &&
+        //              lookAheadValue < cachedValue)) &&
+        //                  gotCacheHit) {
+        //                  cachedMoves.increaseMoveImprovedCount(origBoard.board);
+        //              }
       }
 
       // The alpha-beta pruning step
@@ -340,4 +351,12 @@ namespace chess {
 
     return mmBest.value;
   }
+
+  ThreadArgs::ThreadArgs(Board const &b, Move const &m, Minimax &mm, int d, bool max)
+      : board(b), move(m), agent(mm), depth(d), maximize(max) {}
+
+  ThreadResult::ThreadResult() { value = 0; }
+
+  ThreadResult::ThreadResult(int const i, Move const &m) : value(i), move(m) {}
+
 }  // namespace chess

@@ -5,7 +5,10 @@
  *
  */
 
+#include <board.h>
+#include <evaluator.h>
 #include <minimax.h>
+#include <movecache.h>
 #include <options.h>
 
 #include <algorithm>
@@ -56,7 +59,9 @@ int main(int argc, char **argv) {
 
   playGame(board, agent);
 
-  sig_handler(0);
+  showGameEndSummary();
+
+  return 0;
 }
 
 static void showGameEndSummary() {
@@ -68,27 +73,6 @@ static void showGameEndSummary() {
 static void sig_handler(int /* sig */) {
   showGameEndSummary();
   exit(0);
-}
-
-static string addCommas(long int value) {
-  string str = to_string(value);
-  unsigned long numDigits = str.size();
-  if (numDigits < 4) return str;
-
-  string withCommas;
-  unsigned long insertWhen0 = numDigits % 3;
-  // if insertWhen0 starts at 0 we could put a leading comma before any digits so reset before we
-  // start
-  if (insertWhen0 == 0) insertWhen0 = 3;
-  for (auto it = begin(str); it != end(str); it++) {
-    if (insertWhen0 == 0) {
-      withCommas += ',';
-      insertWhen0 = 3;
-    }
-    insertWhen0--;
-    withCommas.insert(end(withCommas), it, it + 1);
-  }
-  return withCommas;
 }
 
 static void showBoard(Board &board, Minimax const &minimax) {

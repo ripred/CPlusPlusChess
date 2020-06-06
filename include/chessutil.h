@@ -9,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::map;
+using std::mutex;
 using std::numeric_limits;
 using std::string;
 using std::to_string;
@@ -37,7 +39,7 @@ namespace chess {
   static int const MAX_VALUE = numeric_limits<signed int>::max() / 2;
   static int const MIN_VALUE = 0 - MAX_VALUE;
 
-  static array<int const, 7> values = {
+  static array<int const, 7> pieceValues = {
       0,         // empty spot value
       10'000,    // pawn value
       30'000,    // knight value
@@ -103,6 +105,19 @@ namespace chess {
   string getName(Piece b);
 
   string getColor(Piece b);
+
+  class ScopedLock {
+  private:
+    mutex mut;
+    mutex &ref{mut};
+
+  public:
+    ScopedLock() = delete;
+    explicit ScopedLock(mutex &m);
+    virtual ~ScopedLock();
+  };
+
+  string addCommas(long int value);
 
 #define UNUSED(a) \
   do {            \

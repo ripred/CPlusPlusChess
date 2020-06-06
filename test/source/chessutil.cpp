@@ -36,13 +36,13 @@ namespace chess {
     CHECK(!isEmpty(Queen));
     CHECK(!isEmpty(King));
 
-    CHECK(getValue(whitePawn) == values[Pawn]);
-    CHECK(getValue(blackPawn) == values[Pawn]);
-    CHECK(getValue(Rook) == values[Rook]);
-    CHECK(getValue(Knight) == values[Knight]);
-    CHECK(getValue(Bishop) == values[Bishop]);
-    CHECK(getValue(Queen) == values[Queen]);
-    CHECK(getValue(King) == values[King]);
+    CHECK(getValue(whitePawn) == pieceValues[Pawn]);
+    CHECK(getValue(blackPawn) == pieceValues[Pawn]);
+    CHECK(getValue(Rook) == pieceValues[Rook]);
+    CHECK(getValue(Knight) == pieceValues[Knight]);
+    CHECK(getValue(Bishop) == pieceValues[Bishop]);
+    CHECK(getValue(Queen) == pieceValues[Queen]);
+    CHECK(getValue(King) == pieceValues[King]);
 
     CHECK(getSide(whitePawn) == 1);
     CHECK(getSide(blackPawn) == 0);
