@@ -5,15 +5,15 @@
 #  include <sstream>
 #endif
 
+#include <board.h>
+#include <minimax.h>
+
 #include <algorithm>
 #include <iostream>
 
-#include <minimax.h>
-#include <board.h>
-
 namespace chess {
-  using std::cout;
   using std::cend;
+  using std::cout;
   using std::get;
   using std::tuple;
   /**
@@ -25,7 +25,7 @@ namespace chess {
     cout << "Turn: " << game.turns << " ";
     cout << game.lastMove.to_string() << endl;
     vector<string> lines = chess::Board::to_string(game);
-    for (auto const& line : lines) {
+    for (auto const &line : lines) {
       cout << line << endl;
     }
     cout << endl;

@@ -76,18 +76,18 @@ namespace chess {
 
   string addCommas(long int value) {
     string str = to_string(value);
-    unsigned long numDigits = str.size();
-    if (numDigits < 4) return str;
+    size_t numDigits = str.size();
+    if (numDigits < 4u) return str;
 
     string withCommas;
-    unsigned long insertWhen0 = numDigits % 3;
+    size_t insertWhen0 = numDigits % 3u;
     // if insertWhen0 starts at 0 we could put a leading comma before any digits so reset before we
     // start
-    if (insertWhen0 == 0) insertWhen0 = 3;
+    if (insertWhen0 == 0) insertWhen0 = 3u;
     for (auto it = begin(str); it != end(str); it++) {
       if (insertWhen0 == 0) {
         withCommas += ',';
-        insertWhen0 = 3;
+        insertWhen0 = 3u;
       }
       insertWhen0--;
       withCommas.insert(end(withCommas), it, it + 1);
