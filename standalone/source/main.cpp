@@ -40,6 +40,13 @@ Board &getBoard() {
 int main(int argc, char **argv) {
   signal(SIGINT, sig_handler);
 
+  // temp:
+  // force ref to chess:pieceValues until I figure out why this
+  // is being reported as optimized out.
+  int unused = pieceValues[Pawn];
+  int unused2 = unused;
+  unused = unused2;
+
   Options options(--argc, ++argv);
 
   Minimax &agent = getAgent();
