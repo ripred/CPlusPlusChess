@@ -160,7 +160,7 @@ namespace chess {
     /// the number of available cores then the program
     /// is effectively single threaded.
     const unsigned int reserve = 0;
-    if (core_count >= reserve) {
+    if (reserve > 0 && core_count >= reserve) {
       core_count -= reserve;
     }
 
@@ -210,6 +210,10 @@ namespace chess {
     return best.move;
   }
 
+  void unused_int(int /* unused */) {}
+
+  void unused_bool(bool /* unused */) {}
+
   /**
    * The awesome, one and only, minimax algorithm method which recursively searches
    * for the best moves up to a certain number of moves ahead (plies) or until a
@@ -234,6 +238,9 @@ namespace chess {
     bool gotCacheHit = false;
     int cachedValue = value;
     Move check;
+
+    unused_bool(gotCacheHit);
+    unused_int(cachedValue);
 
     for (auto &move : origBoard.moves1) {
       yield();
@@ -283,6 +290,9 @@ namespace chess {
         cachedValue = check.getValue();
         value = check.getValue();
       }
+
+      unused_bool(gotCacheHit);
+      unused_int(cachedValue);
 
       // TODO: Implement after base MoveCache has been fleshed out
       //          if (check.isValid()) {
