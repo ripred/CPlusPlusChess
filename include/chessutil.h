@@ -39,7 +39,7 @@ namespace chess {
   static int const MAX_VALUE = numeric_limits<signed int>::max() / 2;
   static int const MIN_VALUE = 0 - MAX_VALUE;
 
-  static array<int const, 7> pieceValues = {
+  static const array<int const, 7> pieceValues{
       0,         // empty spot value
       10'000,    // pawn value
       30'000,    // knight value
