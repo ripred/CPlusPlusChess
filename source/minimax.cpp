@@ -67,9 +67,11 @@ namespace chess {
 
   Minimax::Minimax(int max_depth) : useThreads(false), useCache(false), best(true) {
     maxDepth = max_depth;
-    qMaxDepth = -2;
+    extraChecks = false;
     movesExamined = 0L;
+    qMaxDepth = -2;
     timeout = 0;
+    reserve = 0;
   }
 
   Move Minimax::bestMove(Board const &board) {
@@ -98,7 +100,7 @@ namespace chess {
 
     PieceMap pieceMap;
 
-    if (false) {
+    if (extraChecks) {
       for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
         if (board.isEmpty(ndx)) continue;
         Piece piece = board.board[ndx];
@@ -159,7 +161,6 @@ namespace chess {
     /// Note that if it is equal to or greater than
     /// the number of available cores then the program
     /// is effectively single threaded.
-    const unsigned int reserve = 0;
     if (reserve > 0 && core_count >= reserve) {
       core_count -= reserve;
     }

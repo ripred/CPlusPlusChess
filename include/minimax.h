@@ -21,6 +21,8 @@ namespace chess {
   public:
     steady_clock::time_point startTime;
     long movesExamined;
+    bool extraChecks;
+    unsigned reserve;
     bool useThreads;
     int qMaxDepth;
     bool useCache;
