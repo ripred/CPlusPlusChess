@@ -74,7 +74,7 @@ namespace chess {
     SideMapType &sideMap = (*cacheMapIter).second;
     key = createKey(board);
     entryMapIter = sideMap.find(key);
-    if (cacheMapIter == cache.end()) {
+    if (entryMapIter == sideMap.end()) {
       ++num_entries;
       cache[side][key] = Entry(move);
       return;

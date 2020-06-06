@@ -168,8 +168,8 @@ namespace chess {
       while (futures.size() > core_count) {
         waitForNextResult();
       }
-      futures.emplace_back(future<ThreadResult>(
-          async(launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
+      futures.emplace_back(future<ThreadResult>(std::async(
+          launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
     }
     while (!futures.empty()) {
       waitForNextResult();
@@ -230,10 +230,10 @@ namespace chess {
    */
   int Minimax::minmax(Board &origBoard, int alpha, int beta, int depth, bool maximize) {
     BestMove mmBest(maximize);
-    int value;
+    int value = mmBest.value;
     bool gotCacheHit = false;
+    int cachedValue = value;
     Move check;
-    int cachedValue = mmBest.value;
 
     for (auto &move : origBoard.moves1) {
       yield();
