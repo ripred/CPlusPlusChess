@@ -21,14 +21,19 @@ namespace chess {
   using std::string;
 
   class MoveCache {
-  private:
+  public:
     struct Entry {
-      int hit, changed;
+      int hit, changed, movesExamined;
       Move move;
 
-      explicit Entry(Move const &m = Move(), int h = 1, int c = 0) : hit(h), changed(c), move(m) {}
+      Entry() = default;
+      Entry(Entry const& ref) = default;
+
+      explicit Entry(Move const &m, int examined, int h = 1, int c = 0) :
+        hit(h), changed(c), movesExamined(examined), move(m) { }
     };
 
+  private:
     using SideMapType = map<string, Entry>;
     using MoveCacheType = map<unsigned int, SideMapType>;
 
@@ -44,8 +49,8 @@ namespace chess {
     static int num_found;
 
   public:
-    static Move lookup(const Board &board, unsigned int side);
-    static void offer(const Board &board, Move &move, unsigned int side);
+    static Entry lookup(const Board &board, unsigned int side);
+    static void offer(const Board &board, Move &move, unsigned int side, int movesExamined);
     static void showMetrics();
   };
 
