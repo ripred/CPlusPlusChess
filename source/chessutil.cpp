@@ -71,9 +71,6 @@ namespace chess {
 
   string getColor(Piece b) { return chess::getSide(b) == White ? "White" : "Black"; }
 
-  ScopedLock::ScopedLock(mutex &m) : ref(m) { ref.lock(); }
-  ScopedLock::~ScopedLock() { ref.unlock(); }
-
   string addCommas(long int value) {
     string str = to_string(value);
     size_t numDigits = str.size();

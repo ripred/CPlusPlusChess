@@ -39,7 +39,7 @@ namespace chess {
   static int const MAX_VALUE = numeric_limits<signed int>::max() / 2;
   static int const MIN_VALUE = 0 - MAX_VALUE;
 
-  static const array<int const, 7> pieceValues{
+  static const int pieceValues[7] = {
       0,         // empty spot value
       10'000,    // pawn value
       30'000,    // knight value
@@ -105,17 +105,6 @@ namespace chess {
   string getName(Piece b);
 
   string getColor(Piece b);
-
-  class ScopedLock {
-  private:
-    mutex mut;
-    mutex &ref{mut};
-
-  public:
-    ScopedLock() = delete;
-    explicit ScopedLock(mutex &m);
-    virtual ~ScopedLock();
-  };
 
   string addCommas(long int value);
 

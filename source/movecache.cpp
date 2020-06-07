@@ -36,25 +36,25 @@ namespace chess {
     return string(begin(key), end(key));
   }
 
-  Move MoveCache::lookup(const Board &board, unsigned int side) {
+  MoveCache::Entry MoveCache::lookup(const Board &board, unsigned int side) {
     string key = createKey(board);
     ++num_lookups;
 
-    ScopedLock guard(MoveCache::cacheMutex);
+    std::lock_guard<std::mutex> guard(MoveCache::cacheMutex);
 
     auto const iterToSideMap = cache.find(side);
-    if (iterToSideMap == cache.end()) return Move();
+    if (iterToSideMap == cache.end()) return Entry();
 
     auto const &sideMapRef = (*iterToSideMap).second;
     auto const iterToEntry = sideMapRef.find(key);
 
-    if (iterToEntry == sideMapRef.end()) return Move();
+    if (iterToEntry == sideMapRef.end()) return Entry();
 
     ++num_found;
-    return ((*iterToEntry).second).move;
+    return (*iterToEntry).second;
   }
 
-  void MoveCache::offer(const Board &board, Move &move, unsigned int side) {
+  void MoveCache::offer(const Board &board, Move &move, unsigned int side, int movesExamined) {
     ++num_offered;
     if (!move.isValid(board)) return;
 
@@ -62,12 +62,12 @@ namespace chess {
     MoveCacheType::iterator cacheMapIter;
     SideMapType::iterator entryMapIter;
 
-    ScopedLock guard(cacheMutex);
+    std::lock_guard<std::mutex> guard(cacheMutex);
 
     cacheMapIter = cache.find(side);
     if (cacheMapIter == cache.end()) {
       ++num_entries;
-      cache[side][key] = Entry(move);
+      cache[side][key] = Entry(move, movesExamined);
       return;
     }
 
@@ -76,7 +76,7 @@ namespace chess {
     entryMapIter = sideMap.find(key);
     if (entryMapIter == sideMap.end()) {
       ++num_entries;
-      cache[side][key] = Entry(move);
+      cache[side][key] = Entry(move, movesExamined);
       return;
     }
 

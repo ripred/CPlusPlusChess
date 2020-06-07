@@ -43,7 +43,7 @@ namespace chess {
 
   // free-standing function to atomically update the number of moves evaluated
   void updateNumMoves(Minimax &agent, int delta) {
-    ScopedLock sl(examinedMutex);
+    std::lock_guard<std::mutex> guard(examinedMutex);
     agent.movesExamined += delta;
   }
 
@@ -91,10 +91,11 @@ namespace chess {
     startTime = steady_clock::now();
 
     if (useCache) {
-      ScopedLock scopedLock(examinedMutex);
-      auto move = MoveCache::lookup(board, board.turn);
-      if (move.isValid(board)) {
-        return move;
+      std::lock_guard<std::mutex> guard(examinedMutex);
+      auto entry = MoveCache::lookup(board, board.turn);
+      if (entry.move.isValid(board)) {
+        movesExamined += entry.movesExamined;
+        return entry.move;
       }
     }
 
@@ -112,8 +113,8 @@ namespace chess {
                            : searchWithNoThreads(board, maximize, pieceMap);
 
     if (useCache && move.isValid(board)) {
-      ScopedLock scopedLock(examinedMutex);
-      MoveCache::offer(board, move, board.turn);
+      std::lock_guard<std::mutex> guard(examinedMutex);
+      MoveCache::offer(board, move, board.turn, movesExamined);
     }
 
     return move;
@@ -238,7 +239,7 @@ namespace chess {
     int value = mmBest.value;
     bool gotCacheHit = false;
     int cachedValue = value;
-    Move check;
+    MoveCache::Entry check;
 
     unused_bool(gotCacheHit);
     unused_int(cachedValue);
@@ -278,35 +279,39 @@ namespace chess {
       // if one is already cached:
 
       gotCacheHit = false;
-      check = Move();
+      check = MoveCache::Entry();
 
       // We force moves to be manually evaluated via minmax when we get
       // down to the end game.
-      if (origBoard.moves1.size() > 5) {
+      if (useCache && origBoard.moves1.size() > 5) {
         check = MoveCache::lookup(origBoard, origBoard.turn);
+
+        if (check.move.isValid()) {
+          gotCacheHit = true;
+          cachedValue = check.move.getValue();
+          value = check.move.getValue();
+          mmBest.move = check.move;
+          mmBest.value = value;
+          mmBest.movesExamined = check.movesExamined;
+        }
+
+        unused_bool(gotCacheHit);
+        unused_int(cachedValue);
+
+        // TODO: Implement after base MoveCache has been fleshed out
+        //          if (check.isValid()) {
+        //              double moveRisk = cachedMoves.getMoveRisk(origBoard.board);
+        //              if (moveRisk > acceptableRiskLevel) {
+        //                  // The risk is too high so we will do this manually and increase the
+        //                  count
+        //                  // of how many times we have rechecked this move for this board
+        //                  cachedMoves.increaseMoveUsedCount(origBoard.board);
+        //                  check = Move();
+        //              }
+        //          }
       }
 
-      if (check.isValid()) {
-        gotCacheHit = true;
-        cachedValue = check.getValue();
-        value = check.getValue();
-      }
-
-      unused_bool(gotCacheHit);
-      unused_int(cachedValue);
-
-      // TODO: Implement after base MoveCache has been fleshed out
-      //          if (check.isValid()) {
-      //              double moveRisk = cachedMoves.getMoveRisk(origBoard.board);
-      //              if (moveRisk > acceptableRiskLevel) {
-      //                  // The risk is too high so we will do this manually and increase the count
-      //                  // of how many times we have rechecked this move for this board
-      //                  cachedMoves.increaseMoveUsedCount(origBoard.board);
-      //                  check = Move();
-      //              }
-      //          }
-
-      if (!check.isValid()) {
+      if (!check.move.isValid()) {
         // We did not get a cached move so evaluate this one fresh
 
         Board currentBoard(origBoard);
@@ -332,7 +337,9 @@ namespace chess {
           mmBest.value = value;
           mmBest.move = move;
 
-          MoveCache::offer(origBoard, move, origBoard.turn);
+          if (useCache) {
+            MoveCache::offer(origBoard, move, origBoard.turn, mmBest.movesExamined);
+          }
         }
 
         // TODO: Implement after base MoveCache has been fleshed out

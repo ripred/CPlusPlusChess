@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
   // temp:
   // force ref to chess:pieceValues until I figure out why this
   // is being reported as optimized out.
-  int unused = pieceValues[Pawn];
-  int unused2 = unused;
-  unused = unused2;
+  //  int unused = pieceValues[Pawn];
+  //  int unused2 = unused;
+  //  unused = unused2;
 
   Options options(--argc, ++argv);
 
@@ -55,29 +55,36 @@ int main(int argc, char **argv) {
   agent = Minimax(options.getInt("ply", 1));
   agent.useCache = options.getBool("cache", false);
   agent.useThreads = options.getBool("threads", true);
+  agent.reserve = options.getInt("reserve", 0);
+  agent.qMaxDepth = options.getInt("qply", 2);
   agent.timeout = options.getInt("timeout", 10);
   board.maxRep = options.getInt("maxrep", 3);
 
-  cout << "use threads     : " << agent.useThreads << endl;
-  cout << "use cache       : " << agent.useCache << endl;
-  cout << "max ply depth   : " << agent.maxDepth << endl;
-  cout << "timeout         : " << agent.timeout << endl;
-  cout << "max repetitions : " << board.maxRep << endl;
+  cout << "use threads       : " << agent.useThreads << endl;
+  cout << "use cache         : " << agent.useCache << endl;
+  cout << "max ply depth     : " << agent.maxDepth << endl;
+  cout << "max quiescent ply : " << agent.qMaxDepth << endl;
+  cout << "reserve           : " << agent.reserve << endl;
+  cout << "timeout           : " << agent.timeout << endl;
+  cout << "max repetitions   : " << board.maxRep << endl;
 
   playGame(board, agent);
 
+  cout << "\r   \r" << endl << endl << "Finished!" << endl << endl;
   showGameEndSummary();
 
   return 0;
 }
 
 static void showGameEndSummary() {
-  cout << "\r   \r" << endl << endl << "Finished!" << endl << endl;
-  chess::MoveCache::showMetrics();
+  if (getAgent().useCache) {
+    chess::MoveCache::showMetrics();
+  }
   cout << endl;
 }
 
 static void sig_handler(int /* sig */) {
+  cout << "\r   \r" << endl << endl << "stopped by user.." << endl << endl;
   showGameEndSummary();
   exit(0);
 }
@@ -105,8 +112,8 @@ static void showBoard(Board &board, Minimax const &minimax) {
     }
     if (isPromoted(lastPieceMoved)) {
       cout << "and was promoted to Queen! ";
-      setPromoted(lastMove.getTo(), false);  // remove promoted flag so we won't mention it again
     }
+    setPromoted(lastMove.getTo(), false);  // remove promoted flag so we won't mention it again
     cout << endl;
   }
 

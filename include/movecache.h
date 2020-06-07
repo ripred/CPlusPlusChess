@@ -27,10 +27,10 @@ namespace chess {
       Move move;
 
       Entry() = default;
-      Entry(Entry const& ref) = default;
+      Entry(Entry const &ref) = default;
 
-      explicit Entry(Move const &m, int examined, int h = 1, int c = 0) :
-        hit(h), changed(c), movesExamined(examined), move(m) { }
+      explicit Entry(Move const &m, int examined, int h = 1, int c = 0)
+          : hit(h), changed(c), movesExamined(examined), move(m) {}
     };
 
   private:
