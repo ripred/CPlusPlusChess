@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   agent.useCache = options.getBool("cache", false);
   agent.useThreads = options.getBool("threads", true);
   agent.reserve = options.getInt("reserve", 0);
-  agent.qMaxDepth = options.getInt("qply", 2);
+  agent.qMaxDepth = 0 - options.getInt("qply", 2);
   agent.timeout = options.getInt("timeout", 10);
   board.maxRep = options.getInt("maxrep", 3);
 
