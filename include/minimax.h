@@ -20,7 +20,7 @@ namespace chess {
   class Minimax {
   public:
     steady_clock::time_point startTime;
-    long movesExamined;
+    int movesExamined;
     bool extraChecks;
     unsigned reserve;
     bool useThreads;
