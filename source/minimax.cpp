@@ -113,7 +113,6 @@ namespace chess {
                            : searchWithNoThreads(board, maximize, pieceMap);
 
     if (useCache && move.isValid(board)) {
-      std::lock_guard<std::mutex> guard(examinedMutex);
       MoveCache::offer(board, move, board.turn, movesExamined);
     }
 
