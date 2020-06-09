@@ -90,7 +90,8 @@ namespace chess {
 
     startTime = steady_clock::now();
 
-    if (useCache) {
+    // See if we have a cached move if we aren't in an end game situation
+    if (useCache && board.moves1.size() > 5) {
       auto entry = MoveCache::lookup(board, board.turn);
       if (entry.move.isValid(board)) {
         movesExamined += entry.movesExamined;
@@ -165,6 +166,7 @@ namespace chess {
     }
 
     for (Move const &m : board.moves1) {
+      // brain-dead implementation to limit total cpu load
       while (futures.size() > core_count) {
         waitForNextResult();
       }
@@ -245,16 +247,12 @@ namespace chess {
     for (auto &move : origBoard.moves1) {
       yield();
 
-      ///////////////////////////////////////////////////////////////////
-      // See if we are at the end of our allowed depth to search and if so,
-      // continue search if we still have made capture moves that we want to
-      // see the responses for.  That way we don't take a pawn with our queen
-      // at the end of a ply, and not know that in response we lose our queen!
-      //
-      // This is known as quiescent searching.
-
+      /// BUGBUG: fix quiescent search checking.  It *should* be able to examine
+      /// the last move *this* side made (which we don't have available presently)
+      /// to see if it was a capture move and to keep searching if so *unless* we've
+      /// reached the additional max quiescent ply depth allowed
       if (depth <= 0) {
-        if ((move.getValue() == 0) || depth <= qMaxDepth) {
+        if ((move.getCaptured() == Empty) || depth <= qMaxDepth) {
           updateNumMoves(*this, mmBest.movesExamined);
           return Evaluator::evaluate(origBoard);
         }
@@ -279,8 +277,7 @@ namespace chess {
       gotCacheHit = false;
       check = MoveCache::Entry();
 
-      // We force moves to be manually evaluated via minmax when we get
-      // down to the end game.
+      // We force moves to be manually evaluated via minmax when we get down to the end game.
       if (useCache && origBoard.moves1.size() > 5) {
         check = MoveCache::lookup(origBoard, origBoard.turn);
 
