@@ -91,7 +91,6 @@ namespace chess {
     startTime = steady_clock::now();
 
     if (useCache) {
-      std::lock_guard<std::mutex> guard(examinedMutex);
       auto entry = MoveCache::lookup(board, board.turn);
       if (entry.move.isValid(board)) {
         movesExamined += entry.movesExamined;
