@@ -29,7 +29,7 @@ namespace chess {
     Options(int argc, char** argv);
 
     void clear();
-    bool parse(int argc, char** argv);
+    bool parse(int argc, char const* const* argv);
     bool write(string const& filename);
     bool read(string const& filename);
 

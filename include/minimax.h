@@ -9,8 +9,10 @@
 #include <bestmove.h>
 #include <board.h>
 #include <move.h>
+#include <movecache.h>
 
 #include <chrono>
+#include <memory>
 #include <mutex>
 
 namespace chess {
@@ -26,11 +28,28 @@ namespace chess {
     bool useThreads;
     int qMaxDepth;
     bool useCache;
-    BestMove best;
+    double acceptableRiskLevel;
+    BestMove best{true};
+    MoveCache cache;
     int maxDepth;
     int timeout;
 
     explicit Minimax(int max_depth = 0);
+
+    Minimax(const Minimax &ref) {
+      startTime = ref.startTime;
+      movesExamined = ref.movesExamined;
+      extraChecks = ref.extraChecks;
+      reserve = ref.reserve;
+      useThreads = ref.useThreads;
+      qMaxDepth = ref.qMaxDepth;
+      useCache = ref.useCache;
+      best = ref.best;
+      cache.cache = ref.cache.cache;
+      maxDepth = ref.maxDepth;
+      timeout = ref.timeout;
+      acceptableRiskLevel = ref.acceptableRiskLevel;
+    }
 
     Move bestMove(Board const &board);
 

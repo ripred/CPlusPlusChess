@@ -8,25 +8,30 @@
 #include <movecache.h>
 
 #include <array>
+#include <mutex>
 
 namespace chess {
   using std::array;
+  using std::lock_guard;
+  using std::make_unique;
+  using std::mutex;
 
-  map<unsigned int, map<string, MoveCache::Entry>> MoveCache::cache;
-  mutex MoveCache::cacheMutex;
+  MoveCache::MoveCache() {
+    num_offered = 0;
+    num_entries = 0;
+    num_lookups = 0;
+    num_changed = 0;
+    num_found = 0;
+    pCacheMutex = make_unique<mutex>();
+  }
 
-  int MoveCache::num_offered;
-  int MoveCache::num_entries;
-  int MoveCache::num_lookups;
-  int MoveCache::num_changed;
-  int MoveCache::num_found;
-
-  string MoveCache::createKey(const Board &board) {
-    static array<char const, 7> const b = {' ', 'p', 'n', 'b', 'r', 'q', 'k'};
-    static array<char const, 7> const w = {' ', 'P', 'N', 'B', 'R', 'Q', 'K'};
+  /* static */
+  string MoveCache::createKey(const Board& board) {
+    static array<char const, 7> const b = {'.', 'p', 'n', 'b', 'r', 'q', 'k'};
+    static array<char const, 7> const w = {'.', 'P', 'N', 'B', 'R', 'Q', 'K'};
     static array<array<char const, 7>, 2> const symbols{b, w};
     array<char, BOARD_SIZE + 1> key{};
-    key.fill(' ');
+    key.fill('.');
     key.at(BOARD_SIZE) = 0;
 
     for (size_t i = 0; i < BOARD_SIZE; ++i) {
@@ -36,61 +41,102 @@ namespace chess {
     return string(begin(key), end(key));
   }
 
-  MoveCache::Entry MoveCache::lookup(const Board &board, unsigned int side) {
-    string key = createKey(board);
-    ++num_lookups;
-
-    std::lock_guard<std::mutex> guard(MoveCache::cacheMutex);
-
-    auto const iterToSideMap = cache.find(side);
-    if (iterToSideMap == cache.end()) return Entry();
-
-    auto const &sideMapRef = (*iterToSideMap).second;
-    auto const iterToEntry = sideMapRef.find(key);
-
-    if (iterToEntry == sideMapRef.end()) return Entry();
-
-    ++num_found;
-    return (*iterToEntry).second;
-  }
-
-  void MoveCache::offer(const Board &board, Move &move, unsigned int side, int movesExamined) {
-    ++num_offered;
+  void MoveCache::offer(Board const& board, Move const& move, Color side, int value,
+                        int movesExamined) {
     if (!move.isValid(board)) return;
 
     string key;
     MoveCacheType::iterator cacheMapIter;
     SideMapType::iterator entryMapIter;
 
-    std::lock_guard<std::mutex> guard(cacheMutex);
+    lock_guard<mutex> guard(*pCacheMutex);
+    ++num_offered;
 
     cacheMapIter = cache.find(side);
     if (cacheMapIter == cache.end()) {
       ++num_entries;
-      cache[side][key] = Entry(move, movesExamined);
+      cache[side][key] = Entry(move, movesExamined, value);
       return;
     }
 
-    SideMapType &sideMap = (*cacheMapIter).second;
     key = createKey(board);
+    SideMapType& sideMap = (*cacheMapIter).second;
+
     entryMapIter = sideMap.find(key);
     if (entryMapIter == sideMap.end()) {
       ++num_entries;
-      cache[side][key] = Entry(move, movesExamined);
+      cache[side][key] = Entry(move, movesExamined, value);
       return;
     }
 
-    Entry hit = cache[side][key];
-    if (move.getValue() > hit.move.getValue()) {
+    // get the best move so far for this side and board
+    Entry& best = cache[side][key];
+
+    // see if the value param is better and replace this move if so
+    if ((side == White && value > best.move.getValue())
+        || (side == Black && value < best.move.getValue())) {
+      best.move = move;
+      best.move.setValue(value);
+      best.movesExamined += movesExamined;
+      cache[side][key] = best;
       ++num_changed;
-      hit.move = move;
-      hit.changed++;
-      hit.hit++;
-      cache[side][key] = hit;
     }
   }
 
-  void MoveCache::showMetrics() {
+  Entry MoveCache::lookup(Board const& board, Color const side) {
+    lock_guard<mutex> guard(*pCacheMutex);
+    ++num_lookups;
+
+    if (cache.find(side) != cache.end()) {
+      string const key = createKey(board);
+      if (cache[side].find(key) != cache[side].end()) {
+        Entry& entry = cache[side][key];
+        if (entry.numRetries != 0) {
+          ++num_found;
+          return entry;
+        }
+      }
+    }
+    return Entry();
+  }
+
+  double MoveCache::getRisk(Board const& board, Color const side) {
+    lock_guard<mutex> guard(*pCacheMutex);
+    if (cache.find(side) != cache.end()) {
+      string const key = createKey(board);
+      if (cache[side].find(key) != cache[side].end()) {
+        Entry const& entry = cache[side][key];
+        if (entry.numRetries != 0) {
+          return double(entry.numBetter) / double(entry.numRetries);
+        }
+      }
+    }
+    return 1.0;
+  }
+
+  void MoveCache::increaseMoveUsedCount(Board const& board, Color const side) {
+    lock_guard<mutex> guard(*pCacheMutex);
+    if (cache.find(side) != cache.end()) {
+      string const key = createKey(board);
+      if (cache[side].find(key) != cache[side].end()) {
+        Entry& entry = cache[side][key];
+        entry.numRetries++;
+      }
+    }
+  }
+
+  void MoveCache::increaseMoveImprovedCount(Board const& board, Color const side) {
+    lock_guard<mutex> guard(*pCacheMutex);
+    if (cache.find(side) != cache.end()) {
+      string const key = createKey(board);
+      if (cache[side].find(key) != cache[side].end()) {
+        Entry& entry = cache[side][key];
+        entry.numBetter++;
+      }
+    }
+  }
+
+  void MoveCache::showMetrics() const {
     using std::cout, std::endl;
     cout << "Offered: " << addCommas(num_offered) << endl;
     cout << "Lookups: " << addCommas(num_lookups) << endl;

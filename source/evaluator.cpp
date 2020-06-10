@@ -31,13 +31,8 @@ namespace chess {
   /// Evaluate the identity (score) of the board state.
   /// Positive scores indicate an advantage for white and
   /// Negative scores indicate an advantage for black.
-  int Evaluator::evaluate(Board const& board) {
-    return evaluate(board, MATERIAL | CENTER | MOBILE);
-  }
-
-  /// Evaluate the identity (score) for one piece at a specific
-  /// location on the board.
-  int Evaluator::evaluate(Board const& board, unsigned filter) {
+  int Evaluator::evaluate(Board const& board,
+                          unsigned filter /* = MATERIAL | CENTER | MOBILITY */) {
     int score = 0;
 
     int mobilityBonus = 3;
@@ -59,16 +54,16 @@ namespace chess {
       if (filter & CENTER) {
         score += centerEvaluator(ndx, p) * centerBonus;
       }
+    }
 
-      /// The score or 'identity property' of the board
-      /// includes extra points for how many totals moves
-      /// (mobility) the remaining pieces can make.
-      if (filter & MOBILE) {
-        int factor = (board.turn == Black) ? -1 : 1;
+    /// The score or 'identity property' of the board
+    /// includes extra points for how many totals moves
+    /// (mobility) the remaining pieces can make.
+    if (filter & MOBILITY) {
+      int factor = (board.turn == Black) ? -1 : 1;
 
-        score += static_cast<int>(board.moves1.size()) * mobilityBonus * factor;
-        score -= static_cast<int>(board.moves2.size()) * mobilityBonus * factor;
-      }
+      score += static_cast<int>(board.moves1.size()) * mobilityBonus * factor;
+      score -= static_cast<int>(board.moves2.size()) * mobilityBonus * factor;
     }
     return score;
   }

@@ -94,13 +94,12 @@ namespace chess {
    *
    */
   void test_threading(const Board &board, int plyDepth = 0) {
-    Minimax agent(0);
+    Minimax agent(plyDepth);
     Board game(board);
 
     // single threaded
     // make a fresh game board copy
     game = Board(board);
-    agent = Minimax(plyDepth);
     agent.useThreads = false;
     game.turn = White;
     game.generateMoveLists();
@@ -117,7 +116,6 @@ namespace chess {
     // multi-threaded
     // make a fresh game board copy
     game = Board(board);
-    agent = Minimax(plyDepth);
     agent.useThreads = true;
     game.turn = White;
     game.generateMoveLists();
@@ -259,7 +257,7 @@ namespace chess {
     game.board[4 + 7 * 8] = makeSpot(King, White, false, false);
     game.turn = White;
     game.generateMoveLists();
-    agent = Minimax(1);  // change agent to go to a ply depth of 1
+    agent.maxDepth = 1;  // change agent to go to a ply depth of 1
     agent.useThreads = false;
     move = agent.bestMove(game);
 
@@ -268,14 +266,14 @@ namespace chess {
     CHECK(game.moves2.size() == 5);
     CHECK(agent.movesExamined == 30);
 
-    agent = Minimax(1);  // change agent to go to a ply depth of 2
+    agent.maxDepth = 2;  // change agent to go to a ply depth of 2
     agent.useThreads = false;
     game.generateMoveLists();
     move = agent.bestMove(game);
     CHECK(move.isValid(game));
     CHECK(game.moves1.size() == 5);
     CHECK(game.moves2.size() == 5);
-    CHECK(agent.movesExamined == 30);
+    CHECK(agent.movesExamined == 84);
 
     game = Board(blank);  // restore blank board
     // set up black king in corner with only 1 legal move
@@ -286,7 +284,8 @@ namespace chess {
     game.board[2 + 7 * 8] = makeSpot(Rook, White, true, false);
     game.turn = Black;
     game.generateMoveLists();
-    agent = Minimax(0);  // change agent to go to a ply depth of 0
+
+    agent.maxDepth = 0;  // change agent to go to a ply depth of 0
     agent.useThreads = false;
     move = agent.bestMove(game);
     CHECK(move.isValid(game));
@@ -299,7 +298,7 @@ namespace chess {
     game.advanceTurn();
 
     // White can checkmate by moving from 0,7 to 0,0 (a1 to a8)
-    agent = Minimax(1);  // change agent to go to a ply depth of 1
+    agent.maxDepth = 1;  // change agent to go to a ply depth of 1
     agent.useThreads = false;
     move = Move(0, 7, 0, 0, 0);
     // execute the white queen move

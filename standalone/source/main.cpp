@@ -22,13 +22,13 @@ using std::string;
 
 using namespace chess;
 
-static void playGame(Board &, Minimax &);
+static void playGame(Board &, Minimax &, Minimax &);
 static void showGameEndSummary();
-static void showBoard(Board &, Minimax const &);
+static void showBoard(Board &, int);
 static void sig_handler(int);
 
 Minimax &getAgent() {
-  static Minimax agent;
+  static Minimax agent(1);
   return agent;
 }
 
@@ -40,35 +40,30 @@ Board &getBoard() {
 int main(int argc, char **argv) {
   signal(SIGINT, sig_handler);
 
-  // temp:
-  // force ref to chess:pieceValues until I figure out why this
-  // is being reported as optimized out.
-  //  int unused = pieceValues[Pawn];
-  //  int unused2 = unused;
-  //  unused = unused2;
-
   Options options(--argc, ++argv);
 
-  Minimax &agent = getAgent();
+  Minimax &agent1 = getAgent();
   Board &board = getBoard();
 
-  agent = Minimax(options.getInt("ply", 1));
-  agent.useCache = options.getBool("cache", false);
-  agent.useThreads = options.getBool("threads", true);
-  agent.reserve = options.getInt("reserve", 0);
-  agent.qMaxDepth = 0 - options.getInt("qply", 2);
-  agent.timeout = options.getInt("timeout", 10);
+  agent1.maxDepth = options.getInt("ply", 1);
+  agent1.extraChecks = options.getBool("extra", false);
+  agent1.useCache = options.getBool("cache", false);
+  agent1.useThreads = options.getBool("threads", true);
+  agent1.reserve = options.getInt("reserve", 0);
+  agent1.qMaxDepth = 0 - options.getInt("qply", 2);
+  agent1.timeout = options.getInt("timeout", 10);
   board.maxRep = options.getInt("maxrep", 3);
 
-  cout << "use threads       : " << agent.useThreads << endl;
-  cout << "use cache         : " << agent.useCache << endl;
-  cout << "max ply depth     : " << agent.maxDepth << endl;
-  cout << "max quiescent ply : " << agent.qMaxDepth << endl;
-  cout << "reserve           : " << agent.reserve << endl;
-  cout << "timeout           : " << agent.timeout << endl;
+  cout << "use threads       : " << agent1.useThreads << endl;
+  cout << "use cache         : " << agent1.useCache << endl;
+  cout << "max ply depth     : " << agent1.maxDepth << endl;
+  cout << "max quiescent ply : " << agent1.qMaxDepth << endl;
+  cout << "extra checks      : " << agent1.extraChecks << endl;
+  cout << "reserve           : " << agent1.reserve << endl;
+  cout << "timeout           : " << agent1.timeout << endl;
   cout << "max repetitions   : " << board.maxRep << endl;
 
-  playGame(board, agent);
+  playGame(board, agent1, agent1);
 
   cout << "\r   \r" << endl << endl << "Finished!" << endl << endl;
   showGameEndSummary();
@@ -78,7 +73,7 @@ int main(int argc, char **argv) {
 
 static void showGameEndSummary() {
   if (getAgent().useCache) {
-    chess::MoveCache::showMetrics();
+    getAgent().cache.showMetrics();
   }
   cout << endl;
 }
@@ -89,7 +84,7 @@ static void sig_handler(int /* sig */) {
   exit(0);
 }
 
-static void showBoard(Board &board, Minimax const &minimax) {
+static void showBoard(Board &board, int movesExamined = 0) {
   static char const types[7] = {' ', 'p', 'n', 'b', 'r', 'q', 'k'};
 
   cout << endl;
@@ -123,7 +118,7 @@ static void showBoard(Board &board, Minimax const &minimax) {
   string winningSide = (score < 0) ? getColor(Black) : (score > 0) ? getColor(White) : "even";
   score = abs(score);
   string scoreStr = addCommas(score);
-  string numExaminedStr = addCommas(minimax.movesExamined);
+  string numExaminedStr = addCommas(movesExamined);
 
   lines[1] += "          Taken1 : ";
   lines[2] += "          Taken2 : ";
@@ -147,19 +142,26 @@ static void showBoard(Board &board, Minimax const &minimax) {
   for_each(begin(lines), end(lines), [](auto const &line) { cout << line << endl; });
 }
 
-static void playGame(Board &board, Minimax &agent) {
-  showBoard(board, agent);
+static void playGame(Board &board, Minimax &agent1, Minimax &agent2) {
+  showBoard(board);
 
-  Move move = agent.bestMove(board);
+  Move move = agent1.bestMove(board);
 
   while (move.isValid(board)) {
     if (board.checkDrawByRepetition(move)) break;
     board.executeMove(move);
     board.advanceTurn();
+    showBoard(board, agent1.movesExamined);
 
-    showBoard(board, agent);
+    move = agent2.bestMove(board);
+    if (move.isValid(board)) {
+      if (board.checkDrawByRepetition(move)) break;
+      board.executeMove(move);
+      board.advanceTurn();
+      showBoard(board, agent2.movesExamined);
+    }
 
-    move = agent.bestMove(board);
+    move = agent1.bestMove(board);
   }
 
   if (board.checkDrawByRepetition(move)) {

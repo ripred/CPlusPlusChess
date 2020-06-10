@@ -27,6 +27,7 @@ using std::vector;
 namespace chess {
 
   using Piece = unsigned int;
+  using Color = Piece;
   using PieceList = vector<Piece>;
   using SidePieceMap = map<Piece, PieceList>;
   using PieceMap = map<Piece, SidePieceMap>;
@@ -58,6 +59,7 @@ namespace chess {
   static Piece const Check = 0b00000000'00000000'00000000'01000000u;
   static Piece const Promoted = 0b00000000'00000000'00000000'10000000u;
 
+  /// The Piece Types
   static Piece const Empty = 0u;
   static Piece const Pawn = 1u;
   static Piece const Knight = 2u;
@@ -73,7 +75,7 @@ namespace chess {
 
   int getValue(Piece b);
 
-  Piece getSide(Piece b);
+  Color getSide(Piece b);
 
   bool hasMoved(Piece b);
 

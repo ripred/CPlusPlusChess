@@ -66,6 +66,7 @@ namespace chess {
   }
 
   Minimax::Minimax(int max_depth) : useThreads(false), useCache(false), best(true) {
+    acceptableRiskLevel = 0.25;
     maxDepth = max_depth;
     extraChecks = false;
     movesExamined = 0L;
@@ -92,7 +93,7 @@ namespace chess {
 
     // See if we have a cached move if we aren't in an end game situation
     if (useCache && board.moves1.size() > 5) {
-      auto entry = MoveCache::lookup(board, board.turn);
+      auto entry = cache.lookup(board, board.turn);
       if (entry.move.isValid(board)) {
         movesExamined += entry.movesExamined;
         return entry.move;
@@ -113,7 +114,7 @@ namespace chess {
                            : searchWithNoThreads(board, maximize, pieceMap);
 
     if (useCache && move.isValid(board)) {
-      MoveCache::offer(board, move, board.turn, movesExamined);
+      cache.offer(board, move, board.turn, move.getValue(), movesExamined);
     }
 
     return move;
@@ -239,7 +240,7 @@ namespace chess {
     int value = mmBest.value;
     bool gotCacheHit = false;
     int cachedValue = value;
-    MoveCache::Entry check;
+    Entry check;
 
     unused_bool(gotCacheHit);
     unused_int(cachedValue);
@@ -275,11 +276,11 @@ namespace chess {
       // if one is already cached:
 
       gotCacheHit = false;
-      check = MoveCache::Entry();
+      check = Entry();
 
       // We force moves to be manually evaluated via minmax when we get down to the end game.
       if (useCache && origBoard.moves1.size() > 5) {
-        check = MoveCache::lookup(origBoard, origBoard.turn);
+        check = cache.lookup(origBoard, origBoard.turn);
 
         if (check.move.isValid()) {
           gotCacheHit = true;
@@ -293,20 +294,18 @@ namespace chess {
         unused_bool(gotCacheHit);
         unused_int(cachedValue);
 
-        // TODO: Implement after base MoveCache has been fleshed out
-        //          if (check.isValid()) {
-        //              double moveRisk = cachedMoves.getMoveRisk(origBoard.board);
-        //              if (moveRisk > acceptableRiskLevel) {
-        //                  // The risk is too high so we will do this manually and increase the
-        //                  count
-        //                  // of how many times we have rechecked this move for this board
-        //                  cachedMoves.increaseMoveUsedCount(origBoard.board);
-        //                  check = Move();
-        //              }
-        //          }
+        if (check.isValid()) {
+          double moveRisk = cache.getRisk(origBoard, origBoard.turn);
+          if (moveRisk > acceptableRiskLevel) {
+            // The risk is too high so we will do this manually and increase the count
+            // of how many times we have rechecked this move for this board
+            cache.increaseMoveUsedCount(origBoard, origBoard.turn);
+            check = Entry();
+          }
+        }
       }
 
-      if (!check.move.isValid()) {
+      if (!check.isValid()) {
         // We did not get a cached move so evaluate this one fresh
 
         Board currentBoard(origBoard);
@@ -333,17 +332,15 @@ namespace chess {
           mmBest.move = move;
 
           if (useCache) {
-            MoveCache::offer(origBoard, move, origBoard.turn, mmBest.movesExamined);
+            cache.offer(origBoard, move, origBoard.turn, value, mmBest.movesExamined);
           }
         }
 
-        // TODO: Implement after base MoveCache has been fleshed out
         // See if we had a cache hit but ran it anyway, and whether this improved the existing move
-        //              if (((maximize && lookAheadValue > cachedValue) || (!maximize &&
-        //              lookAheadValue < cachedValue)) &&
-        //                  gotCacheHit) {
-        //                  cachedMoves.increaseMoveImprovedCount(origBoard.board);
-        //              }
+        if (((maximize && value > cachedValue) || (!maximize && value < cachedValue))
+            && gotCacheHit) {
+          cache.increaseMoveImprovedCount(origBoard, origBoard.turn);
+        }
       }
 
       // The alpha-beta pruning step

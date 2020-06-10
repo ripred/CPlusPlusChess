@@ -6,68 +6,70 @@
 #endif
 
 #include <options.h>
+#include <stdlib.h>
 
-using namespace chess;
+#include <cstdio>
 
-/**
- * unit tests for Options objects
- *
- */
-TEST_CASE("chess::Options") {
-  Options options;
+namespace chess {
+  using std::remove;
 
-  CHECK(!options.exists("nonexist"));
-  CHECK(!options.getBool("nonexist"));
-  CHECK(options.getInt("nonexist") == 0);
-  CHECK(options.get("nonexist") == "");
+  /**
+   * unit tests for Options objects
+   *
+   */
+  TEST_CASE("chess::Options") {
+    Options options1;
 
-  char* argv[] = {(char*)"float_val",   (char*)":",
-                  (char*)"123.789",
+    CHECK(!options1.exists("nonexist"));
+    CHECK(!options1.getBool("nonexist"));
+    CHECK(options1.getInt("nonexist") == 0);
+    CHECK(options1.get("nonexist") == "");
 
-                  (char*)"int_val",     (char*)"=",
-                  (char*)"123456",
+    char *argv[]
+        = {(char *)"--float_val = 123.789", (char *)"--int_val = 123456", (char *)"--bool_val",
+           (char *)"--string_val = string_value", (char *)"--trailing_val"};
 
-                  (char*)"bool_val",    (char*)"=",
-                  (char*)"true",
+    Options options(sizeof(argv) / sizeof(*argv), argv);
 
-                  (char*)"string_val:", (char*)"string_value",
-                  (char*)"trailing_val"};
-  options = Options(sizeof(argv) / sizeof(*argv), argv);
+    CHECK(options.get("string_val") == "string_value");
+    CHECK(options.getInt("int_val") == 123456);
+    CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
+    CHECK(options.getBool("bool_val") /* == true*/);
+    CHECK(options.exists("trailing_val") /* == true*/);
 
-  CHECK(options.get("string_val") == "string_value");
-  CHECK(options.getInt("int_val") == 123456);
-  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
-  CHECK(options.getBool("bool_val") /* == true*/);
-  CHECK(options.exists("trailing_val") /* == true*/);
+    const char *filename = "options.test.txt";
 
-  options.write("options.txt");
-  options.clear();
-  options.read("options.txt");
-  CHECK(options.get("string_val") == "string_value");
-  CHECK(options.getInt("int_val") == 123456);
-  CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
-  CHECK(options.getBool("bool_val") /* == true*/);
+    options.write(filename);
+    options.clear();
+    options.read(filename);
+    remove(filename);
 
-  options.clear();
-  options.set("test", "string");
-  CHECK(options.get("test") == "string");
+    CHECK(options.get("string_val") == "string_value");
+    CHECK(options.getInt("int_val") == 123456);
+    CHECK((float)(int(options.getFloat("float_val") * 1000.0f) / 1000.0f) == 123.78901f);
+    CHECK(options.getBool("bool_val") /* == true*/);
 
-  options.clear();
-  CHECK(!options.getBool("useCache"));
-  options.set("useCache");
-  CHECK(options.getBool("useCache", true));
-  options.setBool("useCache", false);
-  CHECK(!options.getBool("useCache"));
-  options.setBool("useCache");
-  CHECK(options.getBool("useCache"));
+    options.clear();
+    options.set("test", "string");
+    CHECK(options.get("test") == "string");
 
-  options.clear();
-  CHECK(options.getInt("test") == 0);
-  options.setInt("test", 123);
-  CHECK(options.getInt("test") == 123);
+    options.clear();
+    CHECK(!options.getBool("useCache"));
+    options.set("useCache");
+    CHECK(options.getBool("useCache", true));
+    options.setBool("useCache", false);
+    CHECK(!options.getBool("useCache"));
+    options.setBool("useCache");
+    CHECK(options.getBool("useCache"));
 
-  options.clear();
-  CHECK(options.getFloat("test") == 0.0);
-  options.setFloat("test", 123.456f);
-  CHECK(options.getFloat("test") == 123.456f);
-}
+    options.clear();
+    CHECK(options.getInt("test") == 0);
+    options.setInt("test", 123);
+    CHECK(options.getInt("test") == 123);
+
+    options.clear();
+    CHECK(options.getFloat("test") == 0.0);
+    options.setFloat("test", 123.456f);
+    CHECK(options.getFloat("test") == 123.456f);
+  }
+}  // namespace chess
