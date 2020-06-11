@@ -9,13 +9,13 @@
 #include <move.h>
 
 namespace chess {
-  class BestMove {
-  public:
-    Move move;
-    int value;
-    int movesExamined;
+    class BestMove {
+    public:
+        Move move;
+        int value;
+        int movesExamined;
 
-    explicit BestMove(bool maximize);
-    BestMove(Move const& m, int val);
-  };
+        explicit BestMove(bool maximize);
+        BestMove(Move const& m, int val);
+    };
 }  // namespace chess

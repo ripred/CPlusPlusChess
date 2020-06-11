@@ -2,7 +2,7 @@
 
 #if defined(_WIN32) || defined(WIN32)
 // apparently this is required to compile in MSVC++
-#  include <sstream>
+#    include <sstream>
 #endif
 
 #include <bestmove.h>
@@ -18,16 +18,16 @@ using std::tuple;
  *
  */
 TEST_CASE("chess::BestMove") {
-  BestMove best(true);
-  CHECK(best.value == MIN_VALUE);
+    BestMove best(true);
+    CHECK(best.value == MIN_VALUE);
 
-  best = BestMove(false);
-  CHECK(best.value == MAX_VALUE);
+    best = BestMove(false);
+    CHECK(best.value == MAX_VALUE);
 
-  Move const move(1, 2, 3, 4, 42);
-  best = BestMove(move, 7);
-  CHECK(best.value == 7);
-  CHECK(best.move.getValue() == 7);
-  CHECK(best.move.getFrom() == 1 + 2 * 8);
-  CHECK(best.move.getTo() == 3 + 4 * 8);
+    Move const move(1, 2, 3, 4, 42);
+    best = BestMove(move, 7);
+    CHECK(best.value == 7);
+    CHECK(best.move.getValue() == 7);
+    CHECK(best.move.getFrom() == 1 + 2 * 8);
+    CHECK(best.move.getTo() == 3 + 4 * 8);
 }
