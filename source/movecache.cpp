@@ -8,8 +8,10 @@
 #include <movecache.h>
 
 #include <algorithm>
-#include <array>
 #include <iterator>
+#include <stdio.h>  // for snprintf(...)
+#include <memory>
+#include <array>
 #include <mutex>
 
 namespace chess {
@@ -103,7 +105,7 @@ namespace chess {
     char buff[256] = "0.00 %";
     if (num_lookups > 0) {
       double pctUsed = (double(num_found) / double(num_lookups)) * 100.0;
-      sprintf(buff, "%-.4g %%", pctUsed);
+      snprintf(buff, sizeof(buff), "%-.4g %%", pctUsed);
     }
 
     cout << "Lookups : " << addCommas(num_lookups) << endl;
