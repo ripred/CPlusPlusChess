@@ -23,10 +23,9 @@ namespace chess {
         array<Piece, BOARD_SIZE> board{};
         MoveList moves1;
         MoveList moves2;
-        MoveList history;
         PieceList taken1;
         PieceList taken2;
-        Move lastMove{0, 0, 0, 0, 0};
+        MoveList history;
 
         int maxRep{3};
         unsigned int turns{};
@@ -39,23 +38,25 @@ namespace chess {
 
         [[nodiscard]] bool isEmpty(int ndx) const;
         [[nodiscard]] Piece getType(int ndx) const;
-        [[nodiscard]] Piece getSide(int ndx) const;
+        [[nodiscard]] Color getSide(int ndx) const;
         [[nodiscard]] bool hasMoved(int ndx) const;
         [[nodiscard]] int getValue(int ndx) const;
         [[nodiscard]] bool inCheck(int ndx) const;
         [[nodiscard]] bool isPromoted(int ndx) const;
         void setType(int ndx, Piece type);
-        void setSide(int ndx, Piece side);
+        void setSide(int ndx, Color side);
         void setMoved(int ndx, bool hasMoved);
         void setCheck(int ndx, bool inCheck);
         void setPromoted(int ndx, bool promoted);
         static vector<string> to_string(Board const& b);
 
+        [[nodiscard]] Move lastMove() const { return history.empty() ? Move() : history.back(); }
+
         void generateMoveLists();
 
-        [[nodiscard]] bool checkDrawByRepetition(Move const& move) const;
+        [[nodiscard]] bool checkDrawByRepetition(Move const& move, int limit = -1) const;
 
-        [[nodiscard]] bool kingIsInCheck(Piece side) const;
+        [[nodiscard]] bool kingIsInCheck(Color side) const;
 
         void executeMove(Move& move);
 
@@ -77,10 +78,10 @@ namespace chess {
          */
         void advanceTurn();
 
-        [[nodiscard]] MoveList getMoves(Piece side, bool checkKing) const;
-        [[nodiscard]] MoveList getMovesSorted(Piece side) const;
+        [[nodiscard]] MoveList getMoves(Color side, bool checkKing) const;
+        [[nodiscard]] MoveList getMovesSorted(Color side) const;
 
-        MoveList cleanupMoves(MoveList& moves, Piece side) const;
+        MoveList cleanupMoves(MoveList& moves, Color side) const;
 
         static bool isValidSpot(int col, int row);
 
@@ -94,9 +95,9 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a pawn could make from the given
          * spot
          */
-        [[nodiscard]] vector<Move> getPawnMoves(int col, int row) const;
+        [[nodiscard]] MoveList getPawnMoves(int col, int row) const;
 
-        [[nodiscard]] bool addSlider(vector<Move>& moves, int col, int row, int x, int y) const;
+        [[nodiscard]] bool addSlider(MoveList& moves, int col, int row, int x, int y) const;
 
         /**
          * Get a list of all possible moves for a rook at the given location on the board.
@@ -106,7 +107,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a rook could make from the given
          * spot
          */
-        [[nodiscard]] vector<Move> getRookMoves(int col, int row) const;
+        [[nodiscard]] MoveList getRookMoves(int col, int row) const;
 
         /**
          * Get a list of all possible moves for a knight at the given location on the board.
@@ -116,7 +117,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a knight could make from the
          * given spot
          */
-        [[nodiscard]] vector<Move> getKnightMoves(int col, int row) const;
+        [[nodiscard]] MoveList getKnightMoves(int col, int row) const;
 
         /**
          * Get a list of all possible moves for a bishop at the given location on the board.
@@ -126,7 +127,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a bishop could make from the
          * given spot
          */
-        [[nodiscard]] vector<Move> getBishopMoves(int col, int row) const;
+        [[nodiscard]] MoveList getBishopMoves(int col, int row) const;
 
         /**
          * Get a list of all possible moves for a queen at the given location on the board.
@@ -136,7 +137,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a queen could make from the
          * given spot
          */
-        [[nodiscard]] vector<Move> getQueenMoves(int col, int row) const;
+        [[nodiscard]] MoveList getQueenMoves(int col, int row) const;
 
         /**
          * Get a list of all possible moves for a king at the given location on the board.
@@ -146,7 +147,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a king could make from the given
          * spot
          */
-        [[nodiscard]] vector<Move> getKingMoves(int col, int row) const;
+        [[nodiscard]] MoveList getKingMoves(int col, int row) const;
     };
 
 }  // namespace chess

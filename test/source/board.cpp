@@ -20,7 +20,7 @@ namespace chess {
 
         cout << endl;
         cout << "Turn: " << game.turns << " ";
-        cout << game.lastMove.to_string() << endl;
+        cout << game.lastMove().to_string() << endl;
         vector<string> lines = Board::to_string(game);
         for (auto& line : lines) {
             cout << line << endl;
@@ -51,8 +51,8 @@ namespace chess {
             game.board[3 + 6 * 8] = Empty;
             game.setMoved(4 + 3 * 8, true);  // mark pawns as moved
             game.setMoved(3 + 3 * 8, true);
-            game.lastMove = Move(4, 1, 4, 3, 0);  // set last move to black move of pawn
-            game.turn = 1;                        // set game to white's turn
+            game.history.emplace_back(Move(4, 1, 4, 3, 0));  // set last move to black move of pawn
+            game.turn = 1;                                   // set game to white's turn
         } else {
             fromCol = 4;
             fromRow = 3;
@@ -64,8 +64,8 @@ namespace chess {
             game.board[4 + 1 * 8] = Empty;
             game.setMoved(4 + 3 * 8, true);  // mark pawns as moved
             game.setMoved(3 + 3 * 8, true);
-            game.lastMove = Move(3, 6, 3, 3, 0);  // set last move to white move of pawn
-            game.turn = 0;                        // set game to black's turn
+            game.history.emplace_back(Move(3, 6, 3, 3, 0));  // set last move to white move of pawn
+            game.turn = 0;                                   // set game to black's turn
         }
 
         MoveList pawnMoves
@@ -366,7 +366,7 @@ namespace chess {
             if (!game.moves1.empty()) {
                 game.executeMove(game.moves1[0]);
                 game.advanceTurn();
-                drawByRepetition = game.checkDrawByRepetition(game.lastMove);
+                drawByRepetition = game.checkDrawByRepetition(game.lastMove());
                 if (drawByRepetition) {
                     expectedTurns = game.turns;
                     break;

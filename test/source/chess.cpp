@@ -23,7 +23,7 @@ namespace chess {
     static void showBoard(Board &game) {
         cout << endl;
         cout << "Turn: " << game.turns << " ";
-        cout << game.lastMove.to_string() << endl;
+        cout << game.lastMove().to_string() << endl;
         vector<string> lines = chess::Board::to_string(game);
         for (auto const &line : lines) {
             cout << line << endl;

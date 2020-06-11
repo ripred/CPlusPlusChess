@@ -94,7 +94,7 @@ static void showBoard(Board &board, int movesExamined = 0) {
 
     cout << endl;
 
-    Move const &lastMove = board.lastMove;
+    Move const &lastMove = board.lastMove();
     if (lastMove.isValid()) {
         Piece lastPieceMoved = board.board[lastMove.getTo()];
         bool promotedPawn = isPromoted(lastPieceMoved);

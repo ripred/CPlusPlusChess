@@ -50,31 +50,35 @@ namespace chess {
 
     bool Board::isEmpty(int const ndx) const { return chess::isEmpty(board[ndx]); }
 
-    Piece Board::getType(int ndx) const { return chess::getType(board[ndx]); }
+    Piece Board::getType(int const ndx) const { return chess::getType(board[ndx]); }
 
-    Piece Board::getSide(int ndx) const { return chess::getSide(board[ndx]); }
+    Piece Board::getSide(int const ndx) const { return chess::getSide(board[ndx]); }
 
-    bool Board::hasMoved(int ndx) const { return chess::hasMoved(board[ndx]); }
+    bool Board::hasMoved(int const ndx) const { return chess::hasMoved(board[ndx]); }
 
-    int Board::getValue(int ndx) const { return chess::getValue(board[ndx]); }
+    int Board::getValue(int const ndx) const { return chess::getValue(board[ndx]); }
 
-    bool Board::inCheck(int ndx) const { return chess::inCheck(board[ndx]); }
+    bool Board::inCheck(int const ndx) const { return chess::inCheck(board[ndx]); }
 
-    bool Board::isPromoted(int ndx) const { return chess::isPromoted(board[ndx]); }
+    bool Board::isPromoted(int const ndx) const { return chess::isPromoted(board[ndx]); }
 
-    void Board::setType(int ndx, Piece type) { board[ndx] = chess::setType(board[ndx], type); }
+    void Board::setType(int const ndx, Piece type) {
+        board[ndx] = chess::setType(board[ndx], type);
+    }
 
-    void Board::setSide(int ndx, Piece side) { board[ndx] = chess::setSide(board[ndx], side); }
+    void Board::setSide(int const ndx, Piece side) {
+        board[ndx] = chess::setSide(board[ndx], side);
+    }
 
-    void Board::setMoved(int ndx, bool hasMoved) {
+    void Board::setMoved(int const ndx, bool hasMoved) {
         board[ndx] = chess::setMoved(board[ndx], hasMoved);
     }
 
-    void Board::setCheck(int ndx, bool inCheck) {
+    void Board::setCheck(int const ndx, bool inCheck) {
         board[ndx] = chess::setCheck(board[ndx], inCheck);
     }
 
-    void Board::setPromoted(int ndx, bool promoted) {
+    void Board::setPromoted(int const ndx, bool promoted = true) {
         board[ndx] = chess::setPromoted(board[ndx], promoted);
     }
 
@@ -126,20 +130,29 @@ namespace chess {
 
         // at this point the Side (Black or White) constant is in the .turn value
         // for the board.  Whichever color is to move next, it's moves are in
-        // moves1 and the non-moving players moves are in moves2.  Also both
-        // pieces1 and pieces2 are updated to contain the pieces with the same
-        // logic, pieces1 is for whoever's color is in .turn, the other in pieces2.
+        // moves1 and the non-moving players moves are in moves2.
     }
 
-    bool Board::checkDrawByRepetition(Move const &move) const {
-        // Check for draw-by-repetition (same made too many times in a row by a player)
-        size_t need = static_cast<int>(pow(2.0, (maxRep + 1)));
-        if (history.size() < need) return false;
+    /**
+     * Check for draw-by-repetition (same made too many times in a row by a player)
+     */
+    bool Board::checkDrawByRepetition(Move const &move, int limit /* = -1 */) const {
+        if (limit < 0) {
+            limit = maxRep;
+        }
+
+        // Calculate the number of back and forth moves it would require
+        // to repeat ourselves 'limit' times.
+        size_t need = static_cast<int>(pow(2.0, (limit + 1)));
+
+        if (history.size() < need) {
+            return false;
+        }
+
         int count = 0;
         for (auto i = history.size() - need; i < history.size(); i++) {
-            if (history[i] == move) {
-                count++;
-                if (count >= maxRep) return true;
+            if ((history[i] == move) && (++count >= maxRep)) {
+                return true;
             }
         }
         return false;
@@ -152,11 +165,14 @@ namespace chess {
      * @return true if the king is in check
      * spot
      */
-    bool Board::kingIsInCheck(Piece const side) const {
-        const auto &opponentMoves = getMoves((side + 1) % 2, false);
+    bool Board::kingIsInCheck(Color const side) const {
+        /// find our king
         for (auto ndx = 0; ndx < BOARD_SIZE; ndx++) {
             if (getType(ndx) != King || getSide(ndx) != side) continue;
-            for (const auto &move : opponentMoves) {
+            /// generate our opponents current moves
+            auto const &opponentMoves = getMoves((side + 1) % 2, false);
+            /// see if any of our opponents moves can reach the king's spot
+            for (auto const &move : opponentMoves) {
                 if (move.getTo() == ndx) {
                     return true;
                 }
@@ -187,53 +203,49 @@ namespace chess {
         Piece const fromType = chess::getType(piece);
         Piece const toType = chess::getType(toPiece);
 
+        // update the taken pieces list (if necessary)
         PieceList &takenList = (turn == White) ? taken1 : taken2;
-
-        if (toType == Empty && fromType == Pawn && fx != tx) {  // en-passant capture
+        if (fromType == Pawn && toType == Empty && fx != tx) {  // en-passant capture
             takenList.push_back(Pawn);
             move.setCaptured(board[tx + fy * 8]);
             board[tx + fy * 8] = Empty;
         } else {
             if (toType != Empty) {
                 // This move captures a piece
-                move.setCaptured(board[ti]);
+                move.setCaptured(toPiece);
                 takenList.push_back(toType);
             }
         }
 
-        Piece fromSide = chess::getSide(piece);
+        Color fromSide = chess::getSide(piece);
 
-        board[ti] = board[fi];
+        /// make the move on the board
+        board[ti] = piece;
         board[fi] = Empty;
         setMoved(ti, true);
 
         // See if this is a Castling move:
         if (fromType == King) {
-            int delta = tx - fx;
+            int const delta = tx - fx;
+            // if this king is moving more than one spot away then we're castling
             if (abs(delta) == 2) {
-                int rfi;  // Rook from index
-                int rti;  // Rook to index
-                if (delta < 0) {
-                    rfi = fy * 8;      // rook from-index
-                    rti = fy * 8 + 3;  // rook to-index
-                } else {
-                    rfi = fy * 8 + 7;  // rook from-index
-                    rti = fy * 8 + 5;  // rook to-index
-                }
+                // calculate the spot of the rook being moved
+                int const rfi = (delta < 0) ? fy * 8 : fy * 8 + 7;      // index to move rook from
+                int const rti = (delta < 0) ? fy * 8 + 3 : fy * 8 + 5;  // index to move rook to
+                // move the rook
                 board[rti] = board[rfi];
                 setMoved(rti, true);
                 board[rfi] = Empty;
             }
         } else if (fromType == Pawn) {
-            // see if a pawn has reached the other side and needs to be promoted
+            // see if this pawn has reached the other side and promote it to a queen if so
             if ((ty == 0 && fromSide == White) || (ty == 7 && fromSide == Black)) {
                 setType(ti, Queen);
-                setPromoted(ti, true);
+                setPromoted(ti);
             }
         }
 
         history.push_back(move);
-        lastMove = move;
     }
 
     /**
@@ -292,8 +304,8 @@ namespace chess {
             Piece b = board[ndx];
             pieces.push_back(b);
 
-            int col = ndx % 8;
-            int row = ndx / 8;
+            int const col = ndx % 8;
+            int const row = ndx / 8;
             switch (getType(ndx)) {
                 case Pawn:
                     pieceMoves = getPawnMoves(col, row);
@@ -371,16 +383,16 @@ namespace chess {
      * @param fromRow The row to move to
      * @return nothing.  If the move is legal the specified list is updated to include the move
      */
-    void Board::addMoveIfValid(MoveList &moves, int fromCol, int fromRow, int toCol,
-                               int toRow) const {
+    void Board::addMoveIfValid(MoveList &moves, int const fromCol, int const fromRow,
+                               int const toCol, int const toRow) const {
         if (!isValidSpot(fromCol, fromRow)) {
             return;
         }
         if (!isValidSpot(toCol, toRow)) {
             return;
         }
-        int fi = fromCol + fromRow * 8;
-        int ti = toCol + toRow * 8;
+        int const fi = fromCol + fromRow * 8;
+        int const ti = toCol + toRow * 8;
 
         int value = 0;
         Piece pieceType = getType(fi);
@@ -395,7 +407,7 @@ namespace chess {
 
         // extra checks if moving a pawn...
         if (pieceType == Pawn) {
-            int forward = (pieceSide == Black) ? 1 : -1;
+            int const forward = (pieceSide == Black) ? 1 : -1;
             // if double push
             if (abs(fromRow - toRow) == 2) {
                 // not allowed if the pawn has already moved
@@ -412,7 +424,8 @@ namespace chess {
             } else {
                 // pawns cannot move diagonally unless capturing
                 if (isEmpty(ti)) {
-                    if (lastMove.getToRow() != (toRow - forward) || lastMove.getToCol() != toCol) {
+                    if (lastMove().getToRow() != (toRow - forward)
+                        || lastMove().getToCol() != toCol) {
                         return;
                     }
                     // capturing en passant
@@ -435,9 +448,9 @@ namespace chess {
      * @return A new MoveList containing all possible moves a pawn could make from the given
      * spot
      */
-    MoveList Board::getPawnMoves(int col, int row) const {
-        int ndx = col + row * 8;
-        int forward = getSide(ndx) == White ? -1 : 1;
+    MoveList Board::getPawnMoves(int const col, int const row) const {
+        int const ndx = col + row * 8;
+        int const forward = getSide(ndx) == White ? -1 : 1;
         MoveList moves;
 
         addMoveIfValid(moves, col, row, col, row + forward);
@@ -456,8 +469,8 @@ namespace chess {
         // en-passant! on the left
         int ep1x = col - 1;
         if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
-            if (lastMove.getToCol() == ep1x && lastMove.getToRow() == row) {
-                if (abs(lastMove.getFromRow() - lastMove.getToRow()) > 1) {
+            if (lastMove().getToCol() == ep1x && lastMove().getToRow() == row) {
+                if (abs(lastMove().getFromRow() - lastMove().getToRow()) > 1) {
                     if (getType(ep1x + row * 8) == Pawn) {
                         addMoveIfValid(moves, col, row, ep1x, row + forward);
                     }
@@ -468,8 +481,8 @@ namespace chess {
         // en-passant! on the right
         ep1x = col + 1;
         if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
-            if (lastMove.getToCol() == ep1x && lastMove.getToRow() == row) {
-                if (abs(lastMove.getFromRow() - lastMove.getToRow()) > 1) {
+            if (lastMove().getToCol() == ep1x && lastMove().getToRow() == row) {
+                if (abs(lastMove().getFromRow() - lastMove().getToRow()) > 1) {
                     if (getType(ep1x + row * 8) == Pawn) {
                         addMoveIfValid(moves, col, row, ep1x, row + forward);
                     }
@@ -498,12 +511,15 @@ namespace chess {
      *         completed by going off of the board or terminating
      *         at a non-empty spot.
      */
-    bool Board::addSlider(MoveList &moves, int col, int row, int x, int y) const {
+    bool Board::addSlider(MoveList &moves, int const col, int const row, int const x,
+                          int const y) const {
         if (!isValidSpot(x, y)) {
             return false;
         }
         if (!isEmpty(x + y * 8)) {
-            if (getSide(col + row * 8) == getSide(x + y * 8)) return false;
+            if (getSide(col + row * 8) == getSide(x + y * 8)) {
+                return false;
+            }
             addMoveIfValid(moves, col, row, x, y);
             return false;
         }
@@ -519,27 +535,27 @@ namespace chess {
      * @return A new MoveList containing all possible moves a rook could make from the given
      * spot
      */
-    MoveList Board::getRookMoves(int col, int row) const {
+    MoveList Board::getRookMoves(int const col, int const row) const {
         MoveList moves;
 
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col - offset;
-            int y = row;
+            int const x = col - offset;
+            int const y = row;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col + offset;
-            int y = row;
+            int const x = col + offset;
+            int const y = row;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col;
-            int y = row - offset;
+            int const x = col;
+            int const y = row - offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col;
-            int y = row + offset;
+            int const x = col;
+            int const y = row + offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         return moves;
@@ -553,7 +569,7 @@ namespace chess {
      * @return A new MoveList containing all possible moves a knight could make from the given
      * spot
      */
-    MoveList Board::getKnightMoves(int col, int row) const {
+    MoveList Board::getKnightMoves(int const col, int const row) const {
         MoveList moves;
 
         addMoveIfValid(moves, col, row, col - 1, row - 2);
@@ -576,27 +592,27 @@ namespace chess {
      * @return A new MoveList containing all possible moves a bishop could make from the given
      * spot
      */
-    MoveList Board::getBishopMoves(int col, int row) const {
+    MoveList Board::getBishopMoves(int const col, int const row) const {
         MoveList moves;
 
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col - offset;
-            int y = row - offset;
+            int const x = col - offset;
+            int const y = row - offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col + offset;
-            int y = row - offset;
+            int const x = col + offset;
+            int const y = row - offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col - offset;
-            int y = row + offset;
+            int const x = col - offset;
+            int const y = row + offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
         for (int offset = 1; offset <= 7; offset++) {
-            int x = col + offset;
-            int y = row + offset;
+            int const x = col + offset;
+            int const y = row + offset;
             if (!addSlider(moves, col, row, x, y)) break;
         }
 
@@ -611,7 +627,7 @@ namespace chess {
      * @return A new MoveList containing all possible moves a queen could make from the given
      * spot
      */
-    MoveList Board::getQueenMoves(int col, int row) const {
+    MoveList Board::getQueenMoves(int const col, int const row) const {
         MoveList moves;
         moves = getRookMoves(col, row);
         MoveList bishopMoves = getBishopMoves(col, row);
@@ -627,8 +643,8 @@ namespace chess {
      * @return A new MoveList containing all possible moves a king could make from the given
      * spot
      */
-    MoveList Board::getKingMoves(int col, int row) const {
-        int ndx = col + row * 8;
+    MoveList Board::getKingMoves(int const col, int const row) const {
+        int const ndx = col + row * 8;
         MoveList moves;
 
         addMoveIfValid(moves, col, row, col - 1, row - 1);
