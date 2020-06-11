@@ -1,8 +1,11 @@
-ignore:
-  - "test"
-
-comment:
-  require_changes: true
-
-codecov:
-  token: a2bddc51-f143-45e9-8b6c-d1da1f14589d
+{
+    "codecov": {
+        "token": "a2bddc51-f143-45e9-8b6c-d1da1f14589d"
+    },
+    "comment": {
+        "require_changes": true
+    },
+    "ignore": [
+        "^test.*"
+    ]
+}
