@@ -14,11 +14,13 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <tuple>
 
 namespace chess {
   using std::map;
   using std::mutex;
   using std::string;
+  using std::tuple;
   using std::unique_ptr;
 
   /// Entry contains the data kept for every cached move
@@ -32,17 +34,45 @@ namespace chess {
     Entry(const Entry& ref) = default;
     Entry& operator=(const Entry& ref) = default;
 
-    Entry(Move const& m, int examined)
+    Entry(Move const& m, int const examined)
         : move(m), movesExamined(examined), numRetries(0), numBetter(0) {}
 
-    Entry(Move const& m, int examined, int value) : Entry(m, examined) { move.setValue(value); }
+    Entry(Move const& m, int const examined, int const value) {
+      move = m;
+      move.setValue(value);
+      movesExamined = examined;
+      numRetries = 0;
+      numBetter = 0;
+    }
 
     [[nodiscard]] bool isValid() const { return move.isValid(); }
+    [[nodiscard]] bool isValid(Board const& board) const { return move.isValid(board); }
     [[nodiscard]] int getValue() const { return move.getValue(); }
     void setValue(int const value) { move.setValue(value); }
+
+    [[nodiscard]] double getRisk() const {
+      return (numRetries == 0) ? 1.0 : double(numBetter) / double(numRetries);
+    }
+
+    void increaseMoveUsedCount() { numRetries++; }
+
+    void increaseMoveImprovedCount() { numBetter++; }
   };
 
   class MoveCache {
+  private:
+    using EntryFindType = tuple<bool, Entry&>;
+    [[nodiscard]] EntryFindType getEntry(Board const& board, Color side) {
+      static Entry nonExistent;
+      if (cache.find(side) != cache.end()) {
+        string const key = createKey(board);
+        if (cache[side].find(key) != cache[side].end()) {
+          return EntryFindType(true, cache[side][key]);
+        }
+      }
+      return EntryFindType(false, nonExistent);
+    }
+
     using SideMapType = map<string, Entry>;
     using MoveCacheType = map<Piece, SideMapType>;
 

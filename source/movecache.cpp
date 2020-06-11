@@ -7,14 +7,18 @@
 
 #include <movecache.h>
 
+#include <algorithm>
 #include <array>
+#include <iterator>
 #include <mutex>
 
 namespace chess {
   using std::array;
+  using std::get;
   using std::lock_guard;
   using std::make_unique;
   using std::mutex;
+  using std::transform;
 
   MoveCache::MoveCache() {
     num_offered = 0;
@@ -26,123 +30,88 @@ namespace chess {
   }
 
   /* static */
-  string MoveCache::createKey(const Board& board) {
+  string MoveCache::createKey(Board const& board) {
     static array<char const, 7> const b = {'.', 'p', 'n', 'b', 'r', 'q', 'k'};
     static array<char const, 7> const w = {'.', 'P', 'N', 'B', 'R', 'Q', 'K'};
     static array<array<char const, 7>, 2> const symbols{b, w};
     array<char, BOARD_SIZE + 1> key{};
-    key.fill('.');
-    key.at(BOARD_SIZE) = 0;
 
-    for (size_t i = 0; i < BOARD_SIZE; ++i) {
-      Piece p = board.board[i];
-      key[i] = symbols[getSide(p)][getType(p)];
-    }
+    transform(begin(board.board), end(board.board), begin(key),
+              [](Piece const& piece) -> char { return symbols[getSide(piece)][getType(piece)]; });
+    key.at(BOARD_SIZE) = 0;
     return string(begin(key), end(key));
   }
 
-  void MoveCache::offer(Board const& board, Move const& move, Color side, int value,
-                        int movesExamined) {
+  void MoveCache::offer(Board const& board, Move const& move, Color const side, int const value,
+                        int const movesExamined) {
     if (!move.isValid(board)) return;
-
-    string key;
-    MoveCacheType::iterator cacheMapIter;
-    SideMapType::iterator entryMapIter;
+    ++num_offered;
+    string const key = createKey(board);
 
     lock_guard<mutex> guard(*pCacheMutex);
-    ++num_offered;
-
-    cacheMapIter = cache.find(side);
-    if (cacheMapIter == cache.end()) {
+    EntryFindType entry = getEntry(board, side);
+    if (!get<0>(entry)) {
       ++num_entries;
       cache[side][key] = Entry(move, movesExamined, value);
-      return;
-    }
-
-    key = createKey(board);
-    SideMapType& sideMap = (*cacheMapIter).second;
-
-    entryMapIter = sideMap.find(key);
-    if (entryMapIter == sideMap.end()) {
-      ++num_entries;
-      cache[side][key] = Entry(move, movesExamined, value);
-      return;
-    }
-
-    // get the best move so far for this side and board
-    Entry& best = cache[side][key];
-
-    // see if the value param is better and replace this move if so
-    if ((side == White && value > best.move.getValue())
-        || (side == Black && value < best.move.getValue())) {
-      best.move = move;
-      best.move.setValue(value);
-      best.movesExamined += movesExamined;
-      cache[side][key] = best;
-      ++num_changed;
+    } else {
+      Entry& best = get<1>(entry);
+      if ((side == White && value > best.getValue())
+          || (side == Black && value < best.getValue())) {
+        best.move = move;
+        best.setValue(value);
+        best.movesExamined += movesExamined;
+        cache[side][key] = best;
+        ++num_changed;
+      }
     }
   }
 
   Entry MoveCache::lookup(Board const& board, Color const side) {
     lock_guard<mutex> guard(*pCacheMutex);
     ++num_lookups;
-
-    if (cache.find(side) != cache.end()) {
-      string const key = createKey(board);
-      if (cache[side].find(key) != cache[side].end()) {
-        Entry& entry = cache[side][key];
-        if (entry.numRetries != 0) {
-          ++num_found;
-          return entry;
-        }
-      }
-    }
-    return Entry();
+    EntryFindType entry = getEntry(board, side);
+    if (get<0>(entry)) ++num_found;
+    return get<1>(entry);
   }
 
   double MoveCache::getRisk(Board const& board, Color const side) {
     lock_guard<mutex> guard(*pCacheMutex);
-    if (cache.find(side) != cache.end()) {
-      string const key = createKey(board);
-      if (cache[side].find(key) != cache[side].end()) {
-        Entry const& entry = cache[side][key];
-        if (entry.numRetries != 0) {
-          return double(entry.numBetter) / double(entry.numRetries);
-        }
-      }
-    }
-    return 1.0;
+    EntryFindType entry = getEntry(board, side);
+    return get<0>(entry) ? get<1>(entry).getRisk() : 1.0;
   }
 
   void MoveCache::increaseMoveUsedCount(Board const& board, Color const side) {
     lock_guard<mutex> guard(*pCacheMutex);
-    if (cache.find(side) != cache.end()) {
-      string const key = createKey(board);
-      if (cache[side].find(key) != cache[side].end()) {
-        Entry& entry = cache[side][key];
-        entry.numRetries++;
-      }
+    EntryFindType entry = getEntry(board, side);
+    if (get<0>(entry)) {
+      Entry& found = get<1>(entry);
+      found.numRetries++;
     }
   }
 
   void MoveCache::increaseMoveImprovedCount(Board const& board, Color const side) {
     lock_guard<mutex> guard(*pCacheMutex);
-    if (cache.find(side) != cache.end()) {
-      string const key = createKey(board);
-      if (cache[side].find(key) != cache[side].end()) {
-        Entry& entry = cache[side][key];
-        entry.numBetter++;
-      }
+    EntryFindType entry = getEntry(board, side);
+    if (get<0>(entry)) {
+      Entry& found = get<1>(entry);
+      found.numBetter++;
     }
   }
 
   void MoveCache::showMetrics() const {
     using std::cout, std::endl;
-    cout << "Offered: " << addCommas(num_offered) << endl;
-    cout << "Lookups: " << addCommas(num_lookups) << endl;
-    cout << "Changed: " << addCommas(num_changed) << endl;
-    cout << "Entries: " << addCommas(num_entries) << endl;
-    cout << "Found  : " << addCommas(num_found) << endl;
+    char buff[256] = "0.00 %";
+    if (num_lookups > 0) {
+      double pctUsed = (double(num_found) / double(num_lookups)) * 100.0;
+      sprintf(buff, "%-.4g %%", pctUsed);
+    }
+
+    cout << "Lookups : " << addCommas(num_lookups) << endl;
+    cout << "Found   : " << addCommas(num_found) << endl;
+    cout << "Used    : " << buff << endl;
+    cout << "Offered : " << addCommas(num_offered) << endl;
+    cout << "Entries : " << addCommas(num_entries) << endl;
+    cout << "Changed : " << addCommas(num_changed) << endl;
   }
 
 }  // namespace chess

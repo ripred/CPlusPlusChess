@@ -78,7 +78,7 @@ namespace chess {
   Move Minimax::bestMove(Board const &board) {
     bool const maximize = (board.turn == White);
     best = BestMove(maximize);
-    movesExamined = 0L;
+    movesExamined = 0;
 
     // return immediately if there are 1 or 0 moves
     if (board.moves1.size() <= 1) {
@@ -94,7 +94,7 @@ namespace chess {
     // See if we have a cached move if we aren't in an end game situation
     if (useCache && board.moves1.size() > 5) {
       auto entry = cache.lookup(board, board.turn);
-      if (entry.move.isValid(board)) {
+      if (entry.isValid(board)) {
         movesExamined += entry.movesExamined;
         return entry.move;
       }
@@ -148,7 +148,7 @@ namespace chess {
       if (!futures.empty()) {
         ThreadResult const result = futures.front().get();
         futures.pop_front();
-        if (result.move.isValid(board)) {
+        if (result.isValid(board)) {
           if ((maximize && result.value > best.value) || (!maximize && result.value < best.value)) {
             best = BestMove(result.move, result.value);
           }
@@ -213,9 +213,8 @@ namespace chess {
     return best.move;
   }
 
-  void unused_int(int /* unused */) {}
-
-  void unused_bool(bool /* unused */) {}
+  //    void unused_int(int /* unused */) {}
+  //    void unused_bool(bool /* unused */) {}
 
   /**
    * The awesome, one and only, minimax algorithm method which recursively searches
@@ -235,15 +234,12 @@ namespace chess {
    * @return the best score this move (and all consequential response/exchanges up to the allowed
    *         look-ahead depth or time limit for searching).
    */
-  int Minimax::minmax(Board &origBoard, int alpha, int beta, int depth, bool maximize) {
+  int Minimax::minmax(Board &origBoard, int alpha, int beta, int const depth, bool const maximize) {
     BestMove mmBest(maximize);
     int value = mmBest.value;
-    bool gotCacheHit = false;
+    bool gotCacheHit;
     int cachedValue = value;
     Entry check;
-
-    unused_bool(gotCacheHit);
-    unused_int(cachedValue);
 
     for (auto &move : origBoard.moves1) {
       yield();
@@ -262,10 +258,10 @@ namespace chess {
       if (hasTimedOut(*this, depth)) {
         // see if we have changed the best move from it's default (worst value for our side)
         if ((maximize && mmBest.value == MIN_VALUE) || (!maximize && mmBest.value == MAX_VALUE)) {
-          // since our 'worst' move will be favored by our recursive caller do to the fact
-          // that their 'maximize' is equal to our !maximize, we will return 0 as a neutral
-          // value so that other positive or negative results from our other peer threads
-          // can override it if their results are better
+          // since our 'worst' move will be favored by our recursive caller due to the fact
+          // that their 'maximize' is our !maximize, we will return 0 as a neutral value so
+          // that other positive or negative results from our other peer threads can override
+          // it if their results are better
           return 0;
         }
         return mmBest.value;
@@ -282,23 +278,18 @@ namespace chess {
       if (useCache && origBoard.moves1.size() > 5) {
         check = cache.lookup(origBoard, origBoard.turn);
 
-        if (check.move.isValid()) {
+        if (check.isValid()) {
           gotCacheHit = true;
-          cachedValue = check.move.getValue();
-          value = check.move.getValue();
+          value = check.getValue();
+          cachedValue = value;
           mmBest.move = check.move;
           mmBest.value = value;
-          mmBest.movesExamined = check.movesExamined;
-        }
+          mmBest.move.setValue(value);
+          mmBest.movesExamined += check.movesExamined;
 
-        unused_bool(gotCacheHit);
-        unused_int(cachedValue);
-
-        if (check.isValid()) {
-          double moveRisk = cache.getRisk(origBoard, origBoard.turn);
-          if (moveRisk > acceptableRiskLevel) {
+          if (check.getRisk() > acceptableRiskLevel) {
             // The risk is too high so we will do this manually and increase the count
-            // of how many times we have rechecked this move for this board
+            // of how many times we have re-evaluated this move for this board
             cache.increaseMoveUsedCount(origBoard, origBoard.turn);
             check = Entry();
           }
@@ -330,16 +321,19 @@ namespace chess {
         if ((!maximize && value < mmBest.value) || (maximize && value > mmBest.value)) {
           mmBest.value = value;
           mmBest.move = move;
+          mmBest.move.setValue(value);
 
           if (useCache) {
             cache.offer(origBoard, move, origBoard.turn, value, mmBest.movesExamined);
           }
         }
 
-        // See if we had a cache hit but ran it anyway, and whether this improved the existing move
-        if (((maximize && value > cachedValue) || (!maximize && value < cachedValue))
-            && gotCacheHit) {
-          cache.increaseMoveImprovedCount(origBoard, origBoard.turn);
+        // See if we had a cache hit but evaluated it anyway, and whether this improved the existing
+        // move
+        if (gotCacheHit) {
+          if ((maximize && value > cachedValue) || (!maximize && value < cachedValue)) {
+            cache.increaseMoveImprovedCount(origBoard, origBoard.turn);
+          }
         }
       }
 

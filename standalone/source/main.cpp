@@ -23,8 +23,11 @@ using std::string;
 using namespace chess;
 
 static void playGame(Board &, Minimax &, Minimax &);
+
 static void showGameEndSummary();
+
 static void showBoard(Board &, int);
+
 static void sig_handler(int);
 
 Minimax &getAgent() {
@@ -46,22 +49,24 @@ int main(int argc, char **argv) {
   Board &board = getBoard();
 
   agent1.maxDepth = options.getInt("ply", 1);
-  agent1.extraChecks = options.getBool("extra", false);
   agent1.useCache = options.getBool("cache", false);
   agent1.useThreads = options.getBool("threads", true);
+  agent1.extraChecks = options.getBool("extra", false);
+  agent1.acceptableRiskLevel = options.getFloat("risk", 0.25);
   agent1.reserve = options.getInt("reserve", 0);
-  agent1.qMaxDepth = 0 - options.getInt("qply", 2);
+  agent1.qMaxDepth = 0 - options.getInt("qmax", 2);
   agent1.timeout = options.getInt("timeout", 10);
   board.maxRep = options.getInt("maxrep", 3);
 
-  cout << "use threads       : " << agent1.useThreads << endl;
-  cout << "use cache         : " << agent1.useCache << endl;
-  cout << "max ply depth     : " << agent1.maxDepth << endl;
+  cout << "use threads       :  " << agent1.useThreads << endl;
+  cout << "use cache         :  " << agent1.useCache << endl;
+  cout << "max ply depth     :  " << agent1.maxDepth << endl;
+  cout << "timeout           :  " << agent1.timeout << endl;
+  cout << "risk level        :  " << agent1.acceptableRiskLevel << endl;
+  cout << "max repetitions   :  " << board.maxRep << endl;
+  cout << "extra checks      :  " << agent1.extraChecks << endl;
+  cout << "reserve           :  " << agent1.reserve << endl;
   cout << "max quiescent ply : " << agent1.qMaxDepth << endl;
-  cout << "extra checks      : " << agent1.extraChecks << endl;
-  cout << "reserve           : " << agent1.reserve << endl;
-  cout << "timeout           : " << agent1.timeout << endl;
-  cout << "max repetitions   : " << board.maxRep << endl;
 
   playGame(board, agent1, agent1);
 

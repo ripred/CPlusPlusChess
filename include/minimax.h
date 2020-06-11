@@ -21,18 +21,21 @@ namespace chess {
 
   class Minimax {
   public:
-    steady_clock::time_point startTime;
-    int movesExamined;
-    bool extraChecks;
-    unsigned reserve;
-    bool useThreads;
-    int qMaxDepth;
-    bool useCache;
-    double acceptableRiskLevel;
-    BestMove best{true};
-    MoveCache cache;
-    int maxDepth;
-    int timeout;
+    steady_clock::time_point startTime;  // the time the current move search started
+    int movesExamined;  // the number of possible moves examined so far during this move search
+    bool extraChecks;   // perform extra checks on each move y/N
+    unsigned reserve;   // the number of cpu cores to keep out of thread pool during multi-threaded
+                        // move searches
+    bool useThreads;    // use multi-threaded move search y/N
+    int qMaxDepth;      // the maximum depth for quiescent searches
+    bool useCache;      // use move cache y/N
+    double acceptableRiskLevel;  // the maximum risk level allowed for cache moves to be used 0.0
+                                 // - 1.0. default: 0.0 - 0.25
+    BestMove best{true};         // the best move found so far during the current best move search
+    MoveCache cache;             // cache of computed moves for board arrangements we've seen
+    int maxDepth;  // the maximum depth of move responses to consider during best move search
+    int timeout;   // the number of seconds allowed for computer to make a move. 0 means no time
+                   // limit.
 
     explicit Minimax(int max_depth = 0);
 
@@ -104,6 +107,7 @@ namespace chess {
 
     ThreadResult();
     ThreadResult(int i, Move const &m);
+    [[nodiscard]] bool isValid(Board const &board) const { return move.isValid(board); }
   };
 
 }  // namespace chess
