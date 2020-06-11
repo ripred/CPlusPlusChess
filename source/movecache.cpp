@@ -6,12 +6,12 @@
  */
 
 #include <movecache.h>
+#include <stdio.h>  // for snprintf(...)
 
 #include <algorithm>
-#include <iterator>
-#include <stdio.h>  // for snprintf(...)
-#include <memory>
 #include <array>
+#include <iterator>
+#include <memory>
 #include <mutex>
 
 namespace chess {
