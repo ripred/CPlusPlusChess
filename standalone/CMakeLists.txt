@@ -33,7 +33,7 @@ add_executable(ChessStandalone ${sources})
 #target_link_libraries(ChessStandalone PUBLIC Threads::Threads cxxopts -g)
 
 set_target_properties(ChessStandalone PROPERTIES 
-  CXX_STANDARD 17 
+  CXX_STANDARD 17
   OUTPUT_NAME "chess"
 )
 

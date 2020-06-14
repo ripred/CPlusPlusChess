@@ -6,6 +6,8 @@
 #include <board.h>
 
 #include <algorithm>
+#include <iterator>
+#include <memory>
 
 using std::find;
 using std::toupper;
@@ -48,37 +50,37 @@ namespace chess {
         generateMoveLists();
     }
 
-    bool Board::isEmpty(int const ndx) const { return chess::isEmpty(board[ndx]); }
+    bool Board::isEmpty(unsigned int const ndx) const { return chess::isEmpty(board[ndx]); }
 
-    Piece Board::getType(int const ndx) const { return chess::getType(board[ndx]); }
+    Piece Board::getType(unsigned int const ndx) const { return chess::getType(board[ndx]); }
 
-    Piece Board::getSide(int const ndx) const { return chess::getSide(board[ndx]); }
+    Piece Board::getSide(unsigned int const ndx) const { return chess::getSide(board[ndx]); }
 
-    bool Board::hasMoved(int const ndx) const { return chess::hasMoved(board[ndx]); }
+    bool Board::hasMoved(unsigned int const ndx) const { return chess::hasMoved(board[ndx]); }
 
-    int Board::getValue(int const ndx) const { return chess::getValue(board[ndx]); }
+    int Board::getValue(unsigned int const ndx) const { return chess::getValue(board[ndx]); }
 
-    bool Board::inCheck(int const ndx) const { return chess::inCheck(board[ndx]); }
+    bool Board::inCheck(unsigned int const ndx) const { return chess::inCheck(board[ndx]); }
 
-    bool Board::isPromoted(int const ndx) const { return chess::isPromoted(board[ndx]); }
+    bool Board::isPromoted(unsigned int const ndx) const { return chess::isPromoted(board[ndx]); }
 
-    void Board::setType(int const ndx, Piece type) {
+    void Board::setType(unsigned int const ndx, Piece type) {
         board[ndx] = chess::setType(board[ndx], type);
     }
 
-    void Board::setSide(int const ndx, Piece side) {
+    void Board::setSide(unsigned int const ndx, Piece side) {
         board[ndx] = chess::setSide(board[ndx], side);
     }
 
-    void Board::setMoved(int const ndx, bool hasMoved) {
+    void Board::setMoved(unsigned int const ndx, bool hasMoved) {
         board[ndx] = chess::setMoved(board[ndx], hasMoved);
     }
 
-    void Board::setCheck(int const ndx, bool inCheck) {
+    void Board::setCheck(unsigned int const ndx, bool inCheck) {
         board[ndx] = chess::setCheck(board[ndx], inCheck);
     }
 
-    void Board::setPromoted(int const ndx, bool promoted = true) {
+    void Board::setPromoted(unsigned int const ndx, bool promoted = true) {
         board[ndx] = chess::setPromoted(board[ndx], promoted);
     }
 
@@ -89,7 +91,7 @@ namespace chess {
         vector<string> result;
         string line;
 
-        for (auto i = 0; i < BOARD_SIZE; i++) {
+        for (unsigned i = 0; i < BOARD_SIZE; i++) {
             if (i >= 8 && i % 8 == 0) {
                 result.push_back(line);
                 line.clear();
@@ -167,7 +169,7 @@ namespace chess {
      */
     bool Board::kingIsInCheck(Color const side) const {
         /// find our king
-        for (auto ndx = 0; ndx < BOARD_SIZE; ndx++) {
+        for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
             if (getType(ndx) != King || getSide(ndx) != side) continue;
             /// generate our opponents current moves
             auto const &opponentMoves = getMoves((side + 1) % 2, false);
@@ -293,16 +295,11 @@ namespace chess {
     MoveList Board::getMoves(Piece const side, bool checkKing) const {
         MoveList moves;
         MoveList pieceMoves;
+        pieceMoves.reserve(64);
+        moves.reserve(256);
 
-        // We also update the pieces array for this side
-        PieceList pieces;
-
-        for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
+        for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
             if ((getType(ndx) == Empty) || getSide(ndx) != side) continue;
-
-            // add piece to list of pieces for this side
-            Piece b = board[ndx];
-            pieces.push_back(b);
 
             int const col = ndx % 8;
             int const row = ndx / 8;
@@ -369,7 +366,7 @@ namespace chess {
      * @param row The row to check
      * @return true if the coorinates are on the board
      */
-    bool Board::isValidSpot(int const col, int const row) {
+    bool Board::isValidSpot(unsigned int const col, unsigned int const row) {
         return (col >= 0) && (col <= 7) && (row >= 0) && (row <= 7);
     }
 
@@ -383,8 +380,9 @@ namespace chess {
      * @param fromRow The row to move to
      * @return nothing.  If the move is legal the specified list is updated to include the move
      */
-    void Board::addMoveIfValid(MoveList &moves, int const fromCol, int const fromRow,
-                               int const toCol, int const toRow) const {
+    void Board::addMoveIfValid(MoveList &moves, unsigned int const fromCol,
+                               unsigned int const fromRow, unsigned int const toCol,
+                               unsigned int const toRow) const {
         if (!isValidSpot(fromCol, fromRow)) {
             return;
         }
@@ -409,7 +407,7 @@ namespace chess {
         if (pieceType == Pawn) {
             int const forward = (pieceSide == Black) ? 1 : -1;
             // if double push
-            if (abs(fromRow - toRow) == 2) {
+            if (abs(int(fromRow) - int(toRow)) == 2) {
                 // not allowed if the pawn has already moved
                 if (hasMoved(fi) || !isEmpty(fromCol + (fromRow + forward) * 8)) {
                     return;
@@ -448,10 +446,11 @@ namespace chess {
      * @return A new MoveList containing all possible moves a pawn could make from the given
      * spot
      */
-    MoveList Board::getPawnMoves(int const col, int const row) const {
+    MoveList Board::getPawnMoves(unsigned int const col, unsigned int const row) const {
         int const ndx = col + row * 8;
         int const forward = getSide(ndx) == White ? -1 : 1;
         MoveList moves;
+        moves.reserve(8);
 
         addMoveIfValid(moves, col, row, col, row + forward);
         if (!hasMoved(col + row * 8)) {
@@ -467,24 +466,24 @@ namespace chess {
         }
 
         // en-passant! on the left
-        int ep1x = col - 1;
-        if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
-            if (lastMove().getToCol() == ep1x && lastMove().getToRow() == row) {
-                if (abs(lastMove().getFromRow() - lastMove().getToRow()) > 1) {
-                    if (getType(ep1x + row * 8) == Pawn) {
-                        addMoveIfValid(moves, col, row, ep1x, row + forward);
+        unsigned int epx = col - 1;
+        if (isValidSpot(epx, row) && getSide(epx + row * 8) != getSide(ndx)) {
+            if (lastMove().getToCol() == epx && lastMove().getToRow() == row) {
+                if (abs(int(lastMove().getFromRow()) - int(lastMove().getToRow())) > 1) {
+                    if (getType(epx + row * 8) == Pawn) {
+                        addMoveIfValid(moves, col, row, epx, row + forward);
                     }
                 }
             }
         }
 
         // en-passant! on the right
-        ep1x = col + 1;
-        if (isValidSpot(ep1x, row) && getSide(ep1x + row * 8) != getSide(ndx)) {
-            if (lastMove().getToCol() == ep1x && lastMove().getToRow() == row) {
-                if (abs(lastMove().getFromRow() - lastMove().getToRow()) > 1) {
-                    if (getType(ep1x + row * 8) == Pawn) {
-                        addMoveIfValid(moves, col, row, ep1x, row + forward);
+        epx = col + 1;
+        if (isValidSpot(epx, row) && getSide(epx + row * 8) != getSide(ndx)) {
+            if (lastMove().getToCol() == epx && lastMove().getToRow() == row) {
+                if (abs(int(lastMove().getFromRow()) - int(lastMove().getToRow())) > 1) {
+                    if (getType(epx + row * 8) == Pawn) {
+                        addMoveIfValid(moves, col, row, epx, row + forward);
                     }
                 }
             }
@@ -511,8 +510,8 @@ namespace chess {
      *         completed by going off of the board or terminating
      *         at a non-empty spot.
      */
-    bool Board::addSlider(MoveList &moves, int const col, int const row, int const x,
-                          int const y) const {
+    bool Board::addSlider(MoveList &moves, unsigned int const col, unsigned int const row,
+                          unsigned int const x, unsigned int const y) const {
         if (!isValidSpot(x, y)) {
             return false;
         }
@@ -537,6 +536,7 @@ namespace chess {
      */
     MoveList Board::getRookMoves(int const col, int const row) const {
         MoveList moves;
+        moves.reserve(64);
 
         for (int offset = 1; offset <= 7; offset++) {
             int const x = col - offset;
@@ -571,6 +571,7 @@ namespace chess {
      */
     MoveList Board::getKnightMoves(int const col, int const row) const {
         MoveList moves;
+        moves.reserve(8);
 
         addMoveIfValid(moves, col, row, col - 1, row - 2);
         addMoveIfValid(moves, col, row, col + 1, row - 2);
@@ -594,6 +595,7 @@ namespace chess {
      */
     MoveList Board::getBishopMoves(int const col, int const row) const {
         MoveList moves;
+        moves.reserve(64);
 
         for (int offset = 1; offset <= 7; offset++) {
             int const x = col - offset;
@@ -633,6 +635,7 @@ namespace chess {
         MoveList bishopMoves = getBishopMoves(col, row);
         moves.insert(moves.end(), bishopMoves.begin(), bishopMoves.end());
         return moves;
+        moves.reserve(64);
     }
 
     /**
@@ -646,6 +649,7 @@ namespace chess {
     MoveList Board::getKingMoves(int const col, int const row) const {
         int const ndx = col + row * 8;
         MoveList moves;
+        moves.reserve(16);
 
         addMoveIfValid(moves, col, row, col - 1, row - 1);
         addMoveIfValid(moves, col, row, col + 1, row - 1);

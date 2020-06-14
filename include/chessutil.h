@@ -28,26 +28,28 @@ namespace chess {
 
     using Piece = unsigned int;
     using Color = Piece;
+
+    static unsigned const BOARD_SIZE = 64u;
+
+    static Color const White = 1u;
+    static Color const Black = 0u;
+
     using PieceList = vector<Piece>;
     using SidePieceMap = map<Piece, PieceList>;
     using PieceMap = map<Piece, SidePieceMap>;
 
-    static int const BOARD_SIZE = 64;
-
-    static Piece const White = 1u;
-    static Piece const Black = 0u;
-
     static int const MAX_VALUE = numeric_limits<signed int>::max() / 2;
     static int const MIN_VALUE = 0 - MAX_VALUE;
 
-    static const int pieceValues[7] = {
-        0,         // empty spot value
-        10'000,    // pawn value
-        30'000,    // knight value
-        30'000,    // bishop value
-        50'000,    // rook value
-        90'000,    // queen value
-        MAX_VALUE  // king value
+    static const int pieceValues[8] = {
+        0,          // empty spot value
+        10'000,     // pawn value
+        30'000,     // knight value
+        30'000,     // bishop value
+        50'000,     // rook value
+        90'000,     // queen value
+        MAX_VALUE,  // king value
+        0           // padded for alignment and increased L1 and L2 cache hit gains
     };
 
     /// Piece Masks
@@ -98,11 +100,11 @@ namespace chess {
     // common strings
     string getCoords(int index);
 
-    string getCoords(int file, int rank);
+    [[maybe_unused]] string getCoords(int file, int rank);
 
     string getNotate(int index);
 
-    string getNotate(int file, int rank);
+    [[maybe_unused]] string getNotate(int file, int rank);
 
     string getName(Piece b);
 

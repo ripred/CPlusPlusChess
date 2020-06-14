@@ -103,7 +103,7 @@ namespace chess {
         PieceMap pieceMap;
 
         if (extraChecks) {
-            for (int ndx = 0; ndx < BOARD_SIZE; ndx++) {
+            for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
                 if (board.isEmpty(ndx)) continue;
                 Piece piece = board.board[ndx];
                 pieceMap[getSide(piece)][getType(piece)].push_back(ndx);
@@ -146,7 +146,7 @@ namespace chess {
         // and remove it from the front of the deque.
         auto waitForNextResult = [&board, &maximize, this, &futures]() {
             if (!futures.empty()) {
-                ThreadResult const result = futures.front().get();
+                auto const result = futures.front().get();
                 futures.pop_front();
                 if (result.isValid(board)) {
                     if ((maximize && result.value > best.value)
@@ -168,14 +168,19 @@ namespace chess {
         }
 
         for (Move const &m : board.moves1) {
-            // brain-dead implementation to limit total cpu load
-            while (futures.size() > core_count) {
-                waitForNextResult();
+            if (reserve > 0) {
+                // brain-dead implementation to limit total cpu load
+                while (futures.size() > core_count) {
+                    yield();
+                    waitForNextResult();
+                }
             }
-            futures.emplace_back(future<ThreadResult>(std::async(
+            futures.emplace_back(future<ThreadResult>(async(
                 launch::async, threadFunc, new ThreadArgs(board, m, *this, maxDepth, !maximize))));
         }
+
         while (!futures.empty()) {
+            yield();
             waitForNextResult();
         }
         return best.move;

@@ -33,12 +33,7 @@ namespace chess {
     }
 
     Piece makeSpot(Piece type, Piece side, bool moved, bool inCheck) {
-        Piece b = 0;
-        b = setType(b, type);
-        b = setSide(b, side);
-        b = setMoved(b, moved);
-        b = setCheck(b, inCheck);
-        return b;
+        return setType(0, type) | setSide(0, side) | setMoved(0, moved) | setCheck(0, inCheck);
     }
 
     string getCoords(int index) {
@@ -52,7 +47,7 @@ namespace chess {
         return coords[index];
     }
 
-    string getCoords(int file, int rank) { return getCoords(file + rank * 8); }
+    [[maybe_unused]] string getCoords(int file, int rank) { return getCoords(file + rank * 8); }
 
     string getNotate(int index) {
         static const array<string const, BOARD_SIZE> notations
@@ -64,7 +59,7 @@ namespace chess {
         return notations[index];
     }
 
-    string getNotate(int file, int rank) { return getNotate(file + rank * 8); }
+    [[maybe_unused]] string getNotate(int file, int rank) { return getNotate(file + rank * 8); }
 
     string getName(Piece b) {
         static const array<string const, 7> names

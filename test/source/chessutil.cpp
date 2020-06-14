@@ -13,17 +13,21 @@ namespace chess {
      *
      */
     TEST_CASE("chess::chessutil") {
-        // temp:
-        // force ref to chess:pieceValues until I figure out why this
-        // is being reported as optimized out.
-        int unused = pieceValues[Pawn];
-        int unused2 = unused;
-        unused = unused2;
-
         Piece const whitePawn = Promoted | makeSpot(Pawn, White, false, false);
         Piece const blackPawn = makeSpot(Pawn, Black, false, false);
         Piece const movedWhitePawn = setCheck(setMoved(whitePawn, true), true);
         Piece const movedBlackPawn = setCheck(setMoved(blackPawn, true), true);
+
+        CHECK(makeSpot(Pawn, White) == (setType(Empty, Pawn) | setSide(Empty, White)));
+        CHECK(makeSpot(Pawn, Black) == (setType(Empty, Pawn) | setSide(Empty, Black)));
+        CHECK(makeSpot(Pawn, White, true)
+              == (setType(Empty, Pawn) | setSide(Empty, White) | setMoved(Empty, true)));
+        CHECK(makeSpot(Pawn, White, true, true)
+              == (setType(Empty, Pawn) | setSide(Empty, White) | setMoved(Empty, true)
+                  | setCheck(Empty, true)));
+
+        CHECK(whitePawn == (Promoted | Side | Pawn));
+        CHECK(movedWhitePawn == (Promoted | Side | Pawn | Check | Moved));
 
         CHECK(getType(whitePawn) == Pawn);
         CHECK(getType(blackPawn) == Pawn);

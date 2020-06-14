@@ -14,14 +14,14 @@ namespace chess {
         static int materialEvaluator(Piece p);
 
         // center location bonus
-        static int centerEvaluator(int location, Piece piece);
+        static int centerEvaluator(unsigned int location, Piece piece);
 
     public:
         // Filters to decide what to include in our evaluation
-        static unsigned int const MATERIAL = 0x01u;
-        static unsigned int const CENTER = 0x02u;
-        static unsigned int const MOBILITY = 0x04u;
+        static unsigned int const material = 0x01u;
+        static unsigned int const center = 0x02u;
+        static unsigned int const mobility = 0x04u;
 
-        static int evaluate(Board const& board, unsigned int filter = MATERIAL | CENTER | MOBILITY);
+        static int evaluate(Board const& board, unsigned int filter = material | center | mobility);
     };
 }  // namespace chess

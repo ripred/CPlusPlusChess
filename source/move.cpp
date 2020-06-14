@@ -9,7 +9,8 @@ namespace chess {
     Move::Move()
         : captured(Empty), fromCol(0), fromRow(0), toCol(0), toRow(0), from(0), to(0), value(0) {}
 
-    Move::Move(int fromCol, int fromRow, int toCol, int toRow, int value)
+    Move::Move(unsigned int fromCol, unsigned int fromRow, unsigned int toCol, unsigned int toRow,
+               int value)
         : captured(Empty),
           fromCol(fromCol),
           fromRow(fromRow),
@@ -20,12 +21,12 @@ namespace chess {
         this->to = toCol + toRow * 8;
     }
 
-    int Move::getFromCol() const { return fromCol; }
-    int Move::getFromRow() const { return fromRow; }
-    int Move::getToCol() const { return toCol; }
-    int Move::getToRow() const { return toRow; }
-    int Move::getFrom() const { return from; }
-    int Move::getTo() const { return to; }
+    unsigned int Move::getFromCol() const { return fromCol; }
+    unsigned int Move::getFromRow() const { return fromRow; }
+    unsigned int Move::getToCol() const { return toCol; }
+    unsigned int Move::getToRow() const { return toRow; }
+    unsigned int Move::getFrom() const { return from; }
+    unsigned int Move::getTo() const { return to; }
     int Move::getValue() const { return value; }
     Piece Move::getCaptured() const { return captured; }
     bool Move::isCapture() const { return captured != Empty; }

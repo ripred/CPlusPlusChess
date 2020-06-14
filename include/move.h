@@ -17,18 +17,19 @@ namespace chess {
     class Move {
     private:
         Piece captured;
-        int fromCol;
-        int fromRow;
-        int toCol;
-        int toRow;
-        int from;
-        int to;
+        unsigned int fromCol;
+        unsigned int fromRow;
+        unsigned int toCol;
+        unsigned int toRow;
+        unsigned int from;
+        unsigned int to;
         int value;
 
     public:
         Move();
 
-        Move(int fromCol, int fromRow, int toCol, int toRow, int value);
+        Move(unsigned int fromCol, unsigned int fromRow, unsigned int toCol, unsigned int toRow,
+             int value);
 
         Move(Move const &ref) = default;
 
@@ -36,17 +37,17 @@ namespace chess {
 
         bool operator==(Move const &move) const;
 
-        [[nodiscard]] int getFromCol() const;
+        [[nodiscard]] unsigned int getFromCol() const;
 
-        [[nodiscard]] int getFromRow() const;
+        [[nodiscard]] unsigned int getFromRow() const;
 
-        [[nodiscard]] int getToCol() const;
+        [[nodiscard]] unsigned int getToCol() const;
 
-        [[nodiscard]] int getToRow() const;
+        [[nodiscard]] unsigned int getToRow() const;
 
-        [[nodiscard]] int getFrom() const;
+        [[nodiscard]] unsigned int getFrom() const;
 
-        [[nodiscard]] int getTo() const;
+        [[nodiscard]] unsigned int getTo() const;
 
         [[nodiscard]] int getValue() const;
 

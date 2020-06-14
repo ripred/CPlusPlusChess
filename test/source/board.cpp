@@ -37,8 +37,8 @@ namespace chess {
         Board game;
 
         // column and row to test en passant move from. changes if white or black
-        int fromCol = 0, fromRow = 0;
-        int toCol = 0, toRow = 0;
+        unsigned int fromCol = 0, fromRow = 0;
+        unsigned int toCol = 0, toRow = 0;
 
         if (side == White) {
             fromCol = 3;

@@ -9,12 +9,11 @@
 #include <move.h>
 
 #include <array>
-using std::array;
-
 #include <cmath>
 #include <vector>
 
 namespace chess {
+    using std::array;
     using std::vector;
 
     class Board {
@@ -36,18 +35,18 @@ namespace chess {
         Board(Board const& ref) = default;
         Board& operator=(Board const& ref) = default;
 
-        [[nodiscard]] bool isEmpty(int ndx) const;
-        [[nodiscard]] Piece getType(int ndx) const;
-        [[nodiscard]] Color getSide(int ndx) const;
-        [[nodiscard]] bool hasMoved(int ndx) const;
-        [[nodiscard]] int getValue(int ndx) const;
-        [[nodiscard]] bool inCheck(int ndx) const;
-        [[nodiscard]] bool isPromoted(int ndx) const;
-        void setType(int ndx, Piece type);
-        void setSide(int ndx, Color side);
-        void setMoved(int ndx, bool hasMoved);
-        void setCheck(int ndx, bool inCheck);
-        void setPromoted(int ndx, bool promoted);
+        [[nodiscard]] bool isEmpty(unsigned int ndx) const;
+        [[nodiscard]] Piece getType(unsigned int ndx) const;
+        [[nodiscard]] Color getSide(unsigned int ndx) const;
+        [[nodiscard]] bool hasMoved(unsigned int ndx) const;
+        [[nodiscard]] int getValue(unsigned int ndx) const;
+        [[nodiscard]] bool inCheck(unsigned int ndx) const;
+        [[nodiscard]] bool isPromoted(unsigned int ndx) const;
+        void setType(unsigned int ndx, Piece type);
+        void setSide(unsigned int ndx, Color side);
+        void setMoved(unsigned int ndx, bool hasMoved);
+        void setCheck(unsigned int ndx, bool inCheck);
+        void setPromoted(unsigned int ndx, bool promoted);
         static vector<string> to_string(Board const& b);
 
         [[nodiscard]] Move lastMove() const { return history.empty() ? Move() : history.back(); }
@@ -83,9 +82,10 @@ namespace chess {
 
         MoveList cleanupMoves(MoveList& moves, Color side) const;
 
-        static bool isValidSpot(int col, int row);
+        static bool isValidSpot(unsigned int col, unsigned int row);
 
-        void addMoveIfValid(MoveList& moves, int fromCol, int fromRow, int toCol, int toRow) const;
+        void addMoveIfValid(MoveList& moves, unsigned int fromCol, unsigned int fromRow,
+                            unsigned int toCol, unsigned int toRow) const;
 
         /**
          * Get a list of all possible moves for a pawn at the given location on the board.
@@ -95,9 +95,10 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a pawn could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getPawnMoves(int col, int row) const;
+        [[nodiscard]] MoveList getPawnMoves(unsigned int col, unsigned int row) const;
 
-        [[nodiscard]] bool addSlider(MoveList& moves, int col, int row, int x, int y) const;
+        [[nodiscard]] bool addSlider(MoveList& moves, unsigned int col, unsigned int row,
+                                     unsigned int x, unsigned int y) const;
 
         /**
          * Get a list of all possible moves for a rook at the given location on the board.

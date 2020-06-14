@@ -52,7 +52,7 @@ add_library(chess ${headers} ${sources})
 set_target_properties(chess PROPERTIES CXX_STANDARD 17)
 
 # being a cross-platform target, we enforce enforce standards conformance on MSVC
-target_compile_options(chess PUBLIC "$<$<BOOL:${MSVC}>:/permissive->"  "-g" "-Ofast")
+target_compile_options(chess PUBLIC "$<$<BOOL:${MSVC}>:/permissive->"  "-g" "-O0")
 
 # Link dependencies (if required)
 target_link_libraries(chess PUBLIC Threads::Threads -g)

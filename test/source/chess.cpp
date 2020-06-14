@@ -273,7 +273,7 @@ namespace chess {
         CHECK(move.isValid(game));
         CHECK(game.moves1.size() == 5);
         CHECK(game.moves2.size() == 5);
-        CHECK(agent.movesExamined == 84);
+        CHECK(agent.movesExamined == 149);
 
         game = Board(blank);  // restore blank board
         // set up black king in corner with only 1 legal move
