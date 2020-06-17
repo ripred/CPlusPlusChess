@@ -91,7 +91,7 @@ namespace chess {
         static string createKey(const Board& board);
 
         void offer(Board const& board, Move const& move, Color side, int value, int movesExamined);
-        Entry lookup(Board const& board, Color side);
+        Entry lookup(Board const& board);
 
         double getRisk(Board const& board, Color side);
         void increaseMoveUsedCount(Board const& board, Color side);

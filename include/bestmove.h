@@ -17,5 +17,8 @@ namespace chess {
 
         explicit BestMove(bool maximize);
         BestMove(Move const& m, int val);
+
+        [[nodiscard]] bool isValid() const { return move.isValid(); }
+        [[nodiscard]] bool isValid(Board const& board) const { return move.isValid(board); }
     };
 }  // namespace chess

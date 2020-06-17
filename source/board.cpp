@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <memory>
 
 using std::find;
 using std::toupper;
@@ -46,6 +45,8 @@ namespace chess {
         board[7 + 7 * 8] = makeSpot(Rook, White);
 
         turn = White;
+        ndxKing1 = 4 + 7 * 8;
+        ndxKing2 = 4 + 0 * 8;
 
         generateMoveLists();
     }
@@ -168,18 +169,15 @@ namespace chess {
      * spot
      */
     bool Board::kingIsInCheck(Color const side) const {
-        /// find our king
-        for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
-            if (getType(ndx) != King || getSide(ndx) != side) continue;
-            /// generate our opponents current moves
-            auto const &opponentMoves = getMoves((side + 1) % 2, false);
-            /// see if any of our opponents moves can reach the king's spot
-            for (auto const &move : opponentMoves) {
-                if (move.getTo() == ndx) {
-                    return true;
-                }
+        unsigned int ndx = (side == White) ? ndxKing1 : ndxKing2;
+
+        /// generate our opponents current moves
+        auto const &opponentMoves = getMoves((side + 1) % 2, false);
+        /// see if any of our opponents moves can reach the king's spot
+        for (auto const &move : opponentMoves) {
+            if (move.getTo() == ndx) {
+                return true;
             }
-            return false;
         }
         return false;
     }
@@ -192,12 +190,12 @@ namespace chess {
      * @return nothing
      */
     void Board::executeMove(Move &move) {
-        int const fx = move.getFromCol();
-        int const fy = move.getFromRow();
-        int const tx = move.getToCol();
-        int const ty = move.getToRow();
-        int const fi = move.getFrom();
-        int const ti = move.getTo();
+        unsigned int const fx = move.getFromCol();
+        unsigned int const fy = move.getFromRow();
+        unsigned int const tx = move.getToCol();
+        unsigned int const ty = move.getToRow();
+        unsigned int const fi = move.getFrom();
+        unsigned int const ti = move.getTo();
 
         // special check for en passant
         Piece const piece = board[fi];
@@ -228,17 +226,25 @@ namespace chess {
 
         // See if this is a Castling move:
         if (fromType == King) {
-            int const delta = tx - fx;
+            int const delta = int(tx) - int(fx);
             // if this king is moving more than one spot away then we're castling
             if (abs(delta) == 2) {
                 // calculate the spot of the rook being moved
-                int const rfi = (delta < 0) ? fy * 8 : fy * 8 + 7;      // index to move rook from
-                int const rti = (delta < 0) ? fy * 8 + 3 : fy * 8 + 5;  // index to move rook to
+                unsigned int const rfi = (delta < 0) ? fy * 8 : fy * 8 + 7;      // index to move rook from
+                unsigned int const rti = (delta < 0) ? fy * 8 + 3 : fy * 8 + 5;  // index to move rook to
                 // move the rook
                 board[rti] = board[rfi];
                 setMoved(rti, true);
                 board[rfi] = Empty;
             }
+
+            // keep the kings positions up to date
+            if (fromSide == White) {
+                ndxKing1 = ti;
+            } else {
+                ndxKing2 = ti;
+            }
+
         } else if (fromType == Pawn) {
             // see if this pawn has reached the other side and promote it to a queen if so
             if ((ty == 0 && fromSide == White) || (ty == 7 && fromSide == Black)) {
@@ -301,8 +307,8 @@ namespace chess {
         for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
             if ((getType(ndx) == Empty) || getSide(ndx) != side) continue;
 
-            int const col = ndx % 8;
-            int const row = ndx / 8;
+            unsigned int const col = ndx % 8;
+            unsigned int const row = ndx / 8;
             switch (getType(ndx)) {
                 case Pawn:
                     pieceMoves = getPawnMoves(col, row);
@@ -389,8 +395,8 @@ namespace chess {
         if (!isValidSpot(toCol, toRow)) {
             return;
         }
-        int const fi = fromCol + fromRow * 8;
-        int const ti = toCol + toRow * 8;
+        unsigned int const fi = fromCol + fromRow * 8;
+        unsigned int const ti = toCol + toRow * 8;
 
         int value = 0;
         Piece pieceType = getType(fi);
@@ -447,8 +453,8 @@ namespace chess {
      * spot
      */
     MoveList Board::getPawnMoves(unsigned int const col, unsigned int const row) const {
-        int const ndx = col + row * 8;
-        int const forward = getSide(ndx) == White ? -1 : 1;
+        unsigned int const ndx = col + row * 8;
+        unsigned int const forward = getSide(ndx) == White ? -1 : 1;
         MoveList moves;
         moves.reserve(8);
 
@@ -534,29 +540,21 @@ namespace chess {
      * @return A new MoveList containing all possible moves a rook could make from the given
      * spot
      */
-    MoveList Board::getRookMoves(int const col, int const row) const {
+    MoveList Board::getRookMoves(unsigned int const col, unsigned int const row) const {
         MoveList moves;
         moves.reserve(64);
 
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col - offset;
-            int const y = row;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col - offset, row)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col + offset;
-            int const y = row;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col + offset, row)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col;
-            int const y = row - offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col, row - offset)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col;
-            int const y = row + offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col, row + offset)) break;
         }
         return moves;
     }
@@ -569,7 +567,7 @@ namespace chess {
      * @return A new MoveList containing all possible moves a knight could make from the given
      * spot
      */
-    MoveList Board::getKnightMoves(int const col, int const row) const {
+    MoveList Board::getKnightMoves(unsigned int const col, unsigned int const row) const {
         MoveList moves;
         moves.reserve(8);
 
@@ -593,29 +591,21 @@ namespace chess {
      * @return A new MoveList containing all possible moves a bishop could make from the given
      * spot
      */
-    MoveList Board::getBishopMoves(int const col, int const row) const {
+    MoveList Board::getBishopMoves(unsigned int const col, unsigned int const row) const {
         MoveList moves;
         moves.reserve(64);
 
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col - offset;
-            int const y = row - offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col - offset, row - offset)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col + offset;
-            int const y = row - offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col + offset, row - offset)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col - offset;
-            int const y = row + offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col - offset, row + offset)) break;
         }
-        for (int offset = 1; offset <= 7; offset++) {
-            int const x = col + offset;
-            int const y = row + offset;
-            if (!addSlider(moves, col, row, x, y)) break;
+        for (unsigned int offset = 1; offset <= 7; offset++) {
+            if (!addSlider(moves, col, row, col + offset, row + offset)) break;
         }
 
         return moves;
@@ -629,13 +619,14 @@ namespace chess {
      * @return A new MoveList containing all possible moves a queen could make from the given
      * spot
      */
-    MoveList Board::getQueenMoves(int const col, int const row) const {
+    MoveList Board::getQueenMoves(unsigned int const col, unsigned int const row) const {
         MoveList moves;
+        moves.reserve(64);
+
         moves = getRookMoves(col, row);
         MoveList bishopMoves = getBishopMoves(col, row);
         moves.insert(moves.end(), bishopMoves.begin(), bishopMoves.end());
         return moves;
-        moves.reserve(64);
     }
 
     /**
@@ -646,8 +637,8 @@ namespace chess {
      * @return A new MoveList containing all possible moves a king could make from the given
      * spot
      */
-    MoveList Board::getKingMoves(int const col, int const row) const {
-        int const ndx = col + row * 8;
+    MoveList Board::getKingMoves(unsigned int const col, unsigned int const row) const {
+        unsigned int const ndx = col + row * 8;
         MoveList moves;
         moves.reserve(16);
 

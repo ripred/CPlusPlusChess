@@ -25,6 +25,8 @@ namespace chess {
         PieceList taken1;
         PieceList taken2;
         MoveList history;
+        unsigned int ndxKing1{};
+        unsigned int ndxKing2{};
 
         int maxRep{3};
         unsigned int turns{};
@@ -108,7 +110,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a rook could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getRookMoves(int col, int row) const;
+        [[nodiscard]] MoveList getRookMoves(unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a knight at the given location on the board.
@@ -118,7 +120,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a knight could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getKnightMoves(int col, int row) const;
+        [[nodiscard]] MoveList getKnightMoves(unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a bishop at the given location on the board.
@@ -128,7 +130,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a bishop could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getBishopMoves(int col, int row) const;
+        [[nodiscard]] MoveList getBishopMoves(unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a queen at the given location on the board.
@@ -138,7 +140,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a queen could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getQueenMoves(int col, int row) const;
+        [[nodiscard]] MoveList getQueenMoves(unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a king at the given location on the board.
@@ -148,7 +150,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a king could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getKingMoves(int col, int row) const;
+        [[nodiscard]] MoveList getKingMoves(unsigned int col, unsigned int row) const;
     };
 
 }  // namespace chess

@@ -47,14 +47,14 @@ namespace chess {
             score += (filter & center) ? sideFactor * centerEvaluator(ndx, p) * centerBonus : 0;
         }
 
+        int sideFactor = (board.turn == Black) ? -1 : 1;
+
         /// The score or 'identity property' of the board includes extra points for
         /// how many totals moves (mobility) the remaining pieces can make.
         if (filter & mobility) {
-            score += static_cast<int>(board.moves1.size()) * mobilityBonus;
-            score -= static_cast<int>(board.moves2.size()) * mobilityBonus;
+            score += static_cast<int>(board.moves1.size()) * mobilityBonus * sideFactor;
+            score -= static_cast<int>(board.moves2.size()) * mobilityBonus * sideFactor;
         }
-
-        //        score *= (board.turn == Black) ? -1 : 1;
 
         return score;
     }

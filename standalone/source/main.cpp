@@ -8,7 +8,6 @@
 #include <board.h>
 #include <evaluator.h>
 #include <minimax.h>
-#include <movecache.h>
 #include <options.h>
 
 #include <algorithm>
@@ -23,13 +22,9 @@ using std::string;
 using namespace chess;
 
 static void playGame(Board &, Minimax &, Minimax &);
-
 static void showGameEndSummary();
-
 static void showBoard(Board &, int);
-
 static void sig_handler(int);
-
 Minimax &getAgent() {
     static Minimax agent(1);
     return agent;

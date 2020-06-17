@@ -98,15 +98,12 @@ namespace chess {
         Board game(board);
 
         // single threaded
-        // make a fresh game board copy
-        game = Board(board);
         agent.useThreads = false;
         game.turn = White;
         game.generateMoveLists();
         MoveList moveList11 = game.moves1;
         MoveList moveList12 = game.moves2;
 
-        // cout.flush();
         Move move_single_thread = agent.bestMove(game);
 
         size_t count11 = game.moves1.size();
@@ -126,18 +123,11 @@ namespace chess {
         size_t count22 = game.moves2.size();
         unsigned long examined2 = agent.movesExamined;
 
-        // cout << endl << "Threaded Tests @ply depth = " << plyDepth << endl;
-        // showBoard(game);
-
-        // cout << endl << getColor(game.turn) << " moves single vs multi:" << endl;
         auto lists1 = moveListDiff(moveList11, moveList21);
-        // showListDiff(lists1);
         CHECK(get<0>(lists1).size() == 0);
         CHECK(get<1>(lists1).size() == 0);
 
-        // cout << endl << getColor((game.turn + 1) % 2) << " moves single vs multi:" << endl;
         auto lists2 = moveListDiff(moveList12, moveList22);
-        // showListDiff(lists2);
         CHECK(get<0>(lists2).size() == 0);
         CHECK(get<1>(lists2).size() == 0);
 
@@ -160,17 +150,12 @@ namespace chess {
      *
      */
     TEST_CASE("chess::Minimax") {
-        Board game;
-        Board blank;
+        // make an empty game board
+        Board game = Board();
+        game.board.fill(Empty);
 
-        // start a fresh game board
-        game = Board();
-        // clear all the spots
-        for (Piece &bits : game.board) {
-            bits = Empty;
-        }
         // save blank board for re-use
-        blank = Board(game);
+        Board blank = Board(game);
 
         // load up test
         game.board[4 + 0 * 8] = makeSpot(King, Black);
@@ -273,7 +258,7 @@ namespace chess {
         CHECK(move.isValid(game));
         CHECK(game.moves1.size() == 5);
         CHECK(game.moves2.size() == 5);
-        CHECK(agent.movesExamined == 149);
+        CHECK(agent.movesExamined == 84);
 
         game = Board(blank);  // restore blank board
         // set up black king in corner with only 1 legal move

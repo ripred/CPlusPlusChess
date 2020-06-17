@@ -1,6 +1,6 @@
 /**
  * The chessutil namespace is used to interpret and/or set the attributes
- * of a chess piece using one byte to represent the piece
+ * of a chess piece using one int to represent the piece
  */
 
 #include <chessutil.h>

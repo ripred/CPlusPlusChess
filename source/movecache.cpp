@@ -69,10 +69,10 @@ namespace chess {
         }
     }
 
-    Entry MoveCache::lookup(Board const& board, Color const side) {
+    Entry MoveCache::lookup(Board const& board) {
         lock_guard<mutex> guard(*pCacheMutex);
         ++num_lookups;
-        EntryFindType entry = getEntry(board, side);
+        EntryFindType entry = getEntry(board, board.turn);
         if (get<0>(entry)) ++num_found;
         return get<1>(entry);
     }

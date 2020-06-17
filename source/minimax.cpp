@@ -42,27 +42,16 @@ namespace chess {
     mutex examinedMutex;
 
     // free-standing function to atomically update the number of moves evaluated
-    void updateNumMoves(Minimax &agent, int delta) {
+    static void updateNumMoves(Minimax &agent, int delta) {
         std::lock_guard<std::mutex> guard(examinedMutex);
         agent.movesExamined += delta;
     }
 
-    /**
-     * free-standing function to see if move search thread has reached the time limit
-     *
-     * If time limits are in effect we distribute the allowed time non-linearly
-     * across the depths so that searches at the furthest depths time out sooner
-     * which allows more time for earlier depths to consider more results
-     *
-     */
-    bool hasTimedOut(Minimax const &agent, int currentDepth) {
-        if (agent.timeout == 0) return false;
-
-        // always complete the first set of moves
-        if (currentDepth == agent.maxDepth) return false;
-
-        duration<double> timeSpent = steady_clock::now() - agent.startTime;
-        return timeSpent.count() >= agent.timeout;
+    /// free-standing function to see if move search thread has reached the time limit
+    static bool hasTimedOut(Minimax const &agent, int const currentDepth) {
+        if (agent.timeout == 0) { return false; }
+        if (currentDepth == agent.maxDepth) { return false; }   // always let the first set of moves complete
+        return (steady_clock::now() - agent.startTime).count() >= agent.timeout;
     }
 
     Minimax::Minimax(int max_depth) : useThreads(false), useCache(false), best(true) {
@@ -93,7 +82,7 @@ namespace chess {
 
         // See if we have a cached move if we aren't in an end game situation
         if (useCache && board.moves1.size() > 5) {
-            auto entry = cache.lookup(board, board.turn);
+            auto entry = cache.lookup(board);
             if (entry.isValid(board)) {
                 movesExamined += entry.movesExamined;
                 return entry.move;
@@ -137,8 +126,6 @@ namespace chess {
     }
 
     Move Minimax::searchWithThreads(Board const &board, bool maximize, PieceMap & /* pieceMap */) {
-        best = BestMove(maximize);
-
         vector<ThreadResult> threadResults;
         deque<future<ThreadResult>> futures;
 
@@ -196,28 +183,23 @@ namespace chess {
      */
     Move Minimax::searchWithNoThreads(Board const &board, bool maximize,
                                       PieceMap & /* pieceMap */) {
-        // We are not using threads.
-        // Walk through all moves and find the best and return it in this calling thread.
-        best = BestMove(maximize);
+    for (Move move : board.moves1) {
+        if (hasTimedOut(*this, maxDepth)) return best.move;
 
-        for (Move move : board.moves1) {
-            if (hasTimedOut(*this, maxDepth)) return best.move;
+        Board currentBoard(board);
+        currentBoard.executeMove(move);
+        currentBoard.advanceTurn();
+        movesExamined++;
 
-            Board currentBoard(board);
-            currentBoard.executeMove(move);
-            currentBoard.advanceTurn();
-            movesExamined++;
+        int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
 
-            int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
-
-            if ((maximize && lookAheadVal > best.value)
-                || (!maximize && lookAheadVal < best.value)) {
-                best.value = lookAheadVal;
-                best.move = move;
-                best.move.setValue(best.value);
-            }
+        if ((maximize && lookAheadVal > best.value)
+            || (!maximize && lookAheadVal < best.value)) {
+            best.value = lookAheadVal;
+            best.move = move;
+            best.move.setValue(best.value);
         }
-
+    }
         return best.move;
     }
 
@@ -252,29 +234,20 @@ namespace chess {
 
         for (auto &move : origBoard.moves1) {
             yield();
-
-            /// BUGBUG: fix quiescent search checking.  It *should* be able to examine
-            /// the last move *this* side made (which we don't have available presently)
-            /// to see if it was a capture move and to keep searching if so *unless* we've
-            /// reached the additional max quiescent ply depth allowed
             if (depth <= 0) {
-                if ((move.getCaptured() == Empty) || depth <= qMaxDepth) {
+                bool ourLastMoveWasCapture = false;
+                if (origBoard.history.size() >= 2) {
+                    Move &ourLastMove = origBoard.history[origBoard.history.size() - 2];
+                    ourLastMoveWasCapture = ourLastMove.isCapture();
+                }
+                if (!ourLastMoveWasCapture || depth <= qMaxDepth) {
                     updateNumMoves(*this, mmBest.movesExamined);
                     return Evaluator::evaluate(origBoard);
                 }
             }
 
             if (hasTimedOut(*this, depth)) {
-                // see if we have changed the best move from it's default (worst value for our side)
-                if ((maximize && mmBest.value == MIN_VALUE)
-                    || (!maximize && mmBest.value == MAX_VALUE)) {
-                    // since our 'worst' move will be favored by our recursive caller due to the
-                    // fact that their 'maximize' is our !maximize, we will return 0 as a neutral
-                    // value so that other positive or negative results from our other peer threads
-                    // can override it if their results are better
-                    return 0;
-                }
-                return mmBest.value;
+                return mmBest.isValid(origBoard) ? mmBest.value : 0;
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -286,8 +259,7 @@ namespace chess {
 
             // We force moves to be manually evaluated via minmax when we get down to the end game.
             if (useCache && origBoard.moves1.size() > 5) {
-                check = cache.lookup(origBoard, origBoard.turn);
-
+                check = cache.lookup(origBoard);
                 if (check.isValid()) {
                     gotCacheHit = true;
                     value = check.getValue();
