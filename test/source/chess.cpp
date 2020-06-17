@@ -100,6 +100,7 @@ namespace chess {
         // single threaded
         agent.useThreads = false;
         game.turn = White;
+        agent.timeout = 60;
         game.generateMoveLists();
         MoveList moveList11 = game.moves1;
         MoveList moveList12 = game.moves2;
@@ -172,6 +173,7 @@ namespace chess {
         Minimax agent(0);
         agent.useThreads = false;
         agent.useCache = false;
+        agent.timeout = 60;
 
         Move move = agent.bestMove(game);
 
