@@ -256,11 +256,6 @@ namespace chess {
         CHECK(!game.isValidSpot(0, 8));
         CHECK(!game.isValidSpot(8, 0));
         CHECK(!game.isValidSpot(8, 8));
-        CHECK(!game.isValidSpot(0, -1));
-        CHECK(!game.isValidSpot(-1, 0));
-        CHECK(!game.isValidSpot(-1, -1));
-        CHECK(!game.isValidSpot(8, -1));
-        CHECK(!game.isValidSpot(-1, 8));
 
         MoveList moves{};
 
