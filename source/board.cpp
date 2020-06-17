@@ -375,7 +375,7 @@ namespace chess {
      * @return true if the coorinates are on the board
      */
     bool Board::isValidSpot(unsigned int const col, unsigned int const row) {
-        return (col >= 0) && (col <= 7) && (row >= 0) && (row <= 7);
+        return (col <= 7) && (row <= 7);
     }
 
     /**
