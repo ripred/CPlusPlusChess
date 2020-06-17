@@ -230,8 +230,10 @@ namespace chess {
             // if this king is moving more than one spot away then we're castling
             if (abs(delta) == 2) {
                 // calculate the spot of the rook being moved
-                unsigned int const rfi = (delta < 0) ? fy * 8 : fy * 8 + 7;      // index to move rook from
-                unsigned int const rti = (delta < 0) ? fy * 8 + 3 : fy * 8 + 5;  // index to move rook to
+                unsigned int const rfi
+                    = (delta < 0) ? fy * 8 : fy * 8 + 7;  // index to move rook from
+                unsigned int const rti
+                    = (delta < 0) ? fy * 8 + 3 : fy * 8 + 5;  // index to move rook to
                 // move the rook
                 board[rti] = board[rfi];
                 setMoved(rti, true);

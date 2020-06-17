@@ -49,8 +49,12 @@ namespace chess {
 
     /// free-standing function to see if move search thread has reached the time limit
     static bool hasTimedOut(Minimax const &agent, int const currentDepth) {
-        if (agent.timeout == 0) { return false; }
-        if (currentDepth == agent.maxDepth) { return false; }   // always let the first set of moves complete
+        if (agent.timeout == 0) {
+            return false;
+        }
+        if (currentDepth == agent.maxDepth) {
+            return false;
+        }  // always let the first set of moves complete
         return (steady_clock::now() - agent.startTime).count() >= agent.timeout;
     }
 
@@ -183,23 +187,23 @@ namespace chess {
      */
     Move Minimax::searchWithNoThreads(Board const &board, bool maximize,
                                       PieceMap & /* pieceMap */) {
-    for (Move move : board.moves1) {
-        if (hasTimedOut(*this, maxDepth)) return best.move;
+        for (Move move : board.moves1) {
+            if (hasTimedOut(*this, maxDepth)) return best.move;
 
-        Board currentBoard(board);
-        currentBoard.executeMove(move);
-        currentBoard.advanceTurn();
-        movesExamined++;
+            Board currentBoard(board);
+            currentBoard.executeMove(move);
+            currentBoard.advanceTurn();
+            movesExamined++;
 
-        int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
+            int lookAheadVal = minmax(currentBoard, MIN_VALUE, MAX_VALUE, maxDepth, !maximize);
 
-        if ((maximize && lookAheadVal > best.value)
-            || (!maximize && lookAheadVal < best.value)) {
-            best.value = lookAheadVal;
-            best.move = move;
-            best.move.setValue(best.value);
+            if ((maximize && lookAheadVal > best.value)
+                || (!maximize && lookAheadVal < best.value)) {
+                best.value = lookAheadVal;
+                best.move = move;
+                best.move.setValue(best.value);
+            }
         }
-    }
         return best.move;
     }
 
