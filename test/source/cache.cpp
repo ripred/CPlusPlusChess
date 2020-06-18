@@ -29,5 +29,8 @@ namespace chess {
         CHECK(!agent.cache.cache.empty());
         Entry entry = agent.cache.lookup(game);
         CHECK(entry.isValid(game));
+
+        entry.setValue(42);
+        CHECK(entry.getValue() == 42);
     }
 }  // namespace chess
