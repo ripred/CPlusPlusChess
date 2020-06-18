@@ -60,7 +60,7 @@ namespace chess {
     };
 
     class MoveCache {
-    private:
+    public:
         using EntryFindType = tuple<bool, Entry&>;
         [[nodiscard]] EntryFindType getEntry(Board const& board, Color side) {
             static Entry nonExistent;
