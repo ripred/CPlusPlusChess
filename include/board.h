@@ -89,6 +89,9 @@ namespace chess {
         void addMoveIfValid(MoveList& moves, unsigned int fromCol, unsigned int fromRow,
                             unsigned int toCol, unsigned int toRow) const;
 
+        [[nodiscard]] bool addSlider(MoveList& moves, unsigned int col, unsigned int row,
+                                     unsigned int x, unsigned int y) const;
+
         /**
          * Get a list of all possible moves for a pawn at the given location on the board.
          *
@@ -97,10 +100,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a pawn could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getPawnMoves(unsigned int col, unsigned int row) const;
-
-        [[nodiscard]] bool addSlider(MoveList& moves, unsigned int col, unsigned int row,
-                                     unsigned int x, unsigned int y) const;
+        void getPawnMoves(MoveList& moves, unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a rook at the given location on the board.
@@ -110,7 +110,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a rook could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getRookMoves(unsigned int col, unsigned int row) const;
+        void getRookMoves(MoveList& moves, unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a knight at the given location on the board.
@@ -120,7 +120,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a knight could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getKnightMoves(unsigned int col, unsigned int row) const;
+        void getKnightMoves(MoveList& moves, unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a bishop at the given location on the board.
@@ -130,7 +130,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a bishop could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getBishopMoves(unsigned int col, unsigned int row) const;
+        void getBishopMoves(MoveList& moves, unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a queen at the given location on the board.
@@ -140,7 +140,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a queen could make from the
          * given spot
          */
-        [[nodiscard]] MoveList getQueenMoves(unsigned int col, unsigned int row) const;
+        void getQueenMoves(MoveList& moves, unsigned int col, unsigned int row) const;
 
         /**
          * Get a list of all possible moves for a king at the given location on the board.
@@ -150,7 +150,7 @@ namespace chess {
          * @return A new vector<Move> containing all possible moves a king could make from the given
          * spot
          */
-        [[nodiscard]] MoveList getKingMoves(unsigned int col, unsigned int row) const;
+        void getKingMoves(MoveList& moves, unsigned int col, unsigned int row) const;
     };
 
 }  // namespace chess

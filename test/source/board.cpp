@@ -13,7 +13,7 @@ namespace chess {
      * display the current board state
      *
      */
-    void showBoard(Board& game) {
+    void showBoard(Board &game) {
         using std::cout;
         using std::endl;
         using std::string;
@@ -22,7 +22,7 @@ namespace chess {
         cout << "Turn: " << game.turns << " ";
         cout << game.lastMove().to_string() << endl;
         vector<string> lines = Board::to_string(game);
-        for (auto& line : lines) {
+        for (auto &line : lines) {
             cout << line << endl;
         }
         cout << endl;
@@ -68,8 +68,8 @@ namespace chess {
             game.turn = 0;                                   // set game to black's turn
         }
 
-        MoveList pawnMoves
-            = game.getPawnMoves(fromCol, fromRow);  // get all legal moves for the pawn
+        MoveList pawnMoves;
+        game.getPawnMoves(pawnMoves, fromCol, fromRow);  // get all legal moves for the pawn
 
         size_t numPawnMoves = pawnMoves.size();
 
@@ -80,7 +80,7 @@ namespace chess {
         if (numPawnMoves > 0) {
             CHECK(numPawnMoves > 1);
             if (numPawnMoves > 1) {
-                Move& move = pawnMoves[1];
+                Move &move = pawnMoves[1];
                 if (move.getFromCol() == move.getToCol()) {
                     // this is a single-push
                 }
@@ -121,7 +121,9 @@ namespace chess {
             kingRow = 0;
         }
 
-        MoveList kingMoves = game.getKingMoves(kingCol, kingRow);  // king with no moves at start
+        MoveList kingMoves;
+        kingMoves.clear();
+        game.getKingMoves(kingMoves, kingCol, kingRow);  // king with no moves at start
         size_t numKingMoves = kingMoves.size();
         CHECK(numKingMoves == 0);
 
@@ -129,7 +131,8 @@ namespace chess {
         game.board[1 + kingRow * 8] = Empty;
         game.board[2 + kingRow * 8] = Empty;
         game.board[3 + kingRow * 8] = Empty;
-        kingMoves = game.getKingMoves(4, kingRow);  // king with castling on left possible
+        kingMoves.clear();
+        game.getKingMoves(kingMoves, 4, kingRow);  // king with castling on left possible
         numKingMoves = kingMoves.size();
         CHECK(numKingMoves == 2);  // should be 2 moves: castle and move on left
 
@@ -151,7 +154,8 @@ namespace chess {
         // remove pieces between right rook and king
         game.board[5 + kingRow * 8] = Empty;
         game.board[6 + kingRow * 8] = Empty;
-        kingMoves = game.getKingMoves(4, kingRow);  // king with castling on left and right possible
+        kingMoves.clear();
+        game.getKingMoves(kingMoves, 4, kingRow);  // king with castling on left and right possible
         numKingMoves = kingMoves.size();
         CHECK(numKingMoves == 4);  // should be 4 moves: castle and move on left and right
 
@@ -173,9 +177,7 @@ namespace chess {
     TEST_CASE("chess::Board") {
         // test default constructor
         Board game;
-
         CHECK(game.board[0] == Rook);
-
         CHECK(!isEmpty(game.board[0]));
         CHECK(isEmpty(game.board[17]));
         CHECK(getValue(game.board[0]) == pieceValues[Rook]);
@@ -306,48 +308,112 @@ namespace chess {
         CHECK(moves.size() == 20);
 
         // pawn moves
-        CHECK(game.getPawnMoves(0, 1).size() == 2);  // black
-        CHECK(game.getPawnMoves(1, 1).size() == 2);
-        CHECK(game.getPawnMoves(2, 1).size() == 2);
-        CHECK(game.getPawnMoves(3, 1).size() == 2);
-        CHECK(game.getPawnMoves(4, 1).size() == 2);
-        CHECK(game.getPawnMoves(5, 1).size() == 2);
-        CHECK(game.getPawnMoves(6, 1).size() == 2);
-        CHECK(game.getPawnMoves(7, 1).size() == 2);
-        CHECK(game.getPawnMoves(0, 6).size() == 2);  // white
-        CHECK(game.getPawnMoves(1, 6).size() == 2);
-        CHECK(game.getPawnMoves(2, 6).size() == 2);
-        CHECK(game.getPawnMoves(3, 6).size() == 2);
-        CHECK(game.getPawnMoves(4, 6).size() == 2);
-        CHECK(game.getPawnMoves(5, 6).size() == 2);
-        CHECK(game.getPawnMoves(6, 6).size() == 2);
-        CHECK(game.getPawnMoves(7, 6).size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 0, 1);
+        CHECK(moves.size() == 2);  // black
+        moves.clear();
+        game.getPawnMoves(moves, 1, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 2, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 3, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 4, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 5, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 6, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 7, 1);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 0, 6);
+        CHECK(moves.size() == 2);  // white
+        moves.clear();
+        game.getPawnMoves(moves, 1, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 2, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 3, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 4, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 5, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 6, 6);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getPawnMoves(moves, 7, 6);
+        CHECK(moves.size() == 2);
 
         // rook moves
-        CHECK(game.getRookMoves(0, 0).size() == 0);  // black
-        CHECK(game.getRookMoves(7, 0).size() == 0);
-        CHECK(game.getRookMoves(0, 7).size() == 0);  // white
-        CHECK(game.getRookMoves(7, 7).size() == 0);
+        moves.clear();
+        game.getRookMoves(moves, 0, 0);
+        CHECK(moves.size() == 0);  // black
+        moves.clear();
+        game.getRookMoves(moves, 7, 0);
+        CHECK(moves.size() == 0);
+        moves.clear();
+        game.getRookMoves(moves, 0, 7);
+        CHECK(moves.size() == 0);  // white
+        moves.clear();
+        game.getRookMoves(moves, 7, 7);
+        CHECK(moves.size() == 0);
 
         // knight moves
-        CHECK(game.getKnightMoves(1, 0).size() == 2);  // black
-        CHECK(game.getKnightMoves(6, 0).size() == 2);
-        CHECK(game.getKnightMoves(1, 7).size() == 2);  // white
-        CHECK(game.getKnightMoves(6, 7).size() == 2);
+        moves.clear();
+        game.getKnightMoves(moves, 1, 0);
+        CHECK(moves.size() == 2);  // black
+        moves.clear();
+        game.getKnightMoves(moves, 6, 0);
+        CHECK(moves.size() == 2);
+        moves.clear();
+        game.getKnightMoves(moves, 1, 7);
+        CHECK(moves.size() == 2);  // white
+        moves.clear();
+        game.getKnightMoves(moves, 6, 7);
+        CHECK(moves.size() == 2);
 
         // bishop moves
-        CHECK(game.getBishopMoves(2, 0).size() == 0);  // black
-        CHECK(game.getBishopMoves(5, 0).size() == 0);
-        CHECK(game.getBishopMoves(2, 7).size() == 0);  // white
-        CHECK(game.getBishopMoves(5, 7).size() == 0);
+        moves.clear();
+        game.getBishopMoves(moves, 2, 0);
+        CHECK(moves.size() == 0);  // black
+        moves.clear();
+        game.getBishopMoves(moves, 5, 0);
+        CHECK(moves.size() == 0);
+        moves.clear();
+        game.getBishopMoves(moves, 2, 7);
+        CHECK(moves.size() == 0);  // white
+        moves.clear();
+        game.getBishopMoves(moves, 5, 7);
+        CHECK(moves.size() == 0);
 
         // queen moves
-        CHECK(game.getQueenMoves(3, 0).size() == 0);  // black
-        CHECK(game.getQueenMoves(3, 7).size() == 0);  // white
+        moves.clear();
+        game.getQueenMoves(moves, 3, 0);
+        CHECK(moves.size() == 0);  // black
+        moves.clear();
+        game.getQueenMoves(moves, 3, 7);
+        CHECK(moves.size() == 0);  // white
 
         // king moves
-        CHECK(game.getKingMoves(4, 0).size() == 0);  // black
-        CHECK(game.getKingMoves(4, 7).size() == 0);  // white
+        moves.clear();
+        game.getKingMoves(moves, 4, 0);
+        CHECK(moves.size() == 0);  // black
+        moves.clear();
+        game.getKingMoves(moves, 4, 7);
+        CHECK(moves.size() == 0);  // white
 
         // all moves
         CHECK(game.moves1.size() == 20);
@@ -390,16 +456,16 @@ namespace chess {
         MoveList moveList{};
 
         game.addMoveIfValid(moveList, 4, 1, 3, 2);  // black pawn
-                                                    // check that the add did not succeed
+        // check that the add did not succeed
         CHECK(moveList.size() == 0);
 
         game.addMoveIfValid(moveList, 3, 6, 4, 5);  // white pawn
-                                                    // check that the add did not succeed
+        // check that the add did not succeed
         CHECK(moveList.size() == 0);
 
         // check that pawns are promoted to queens on back row
         game = Board();
-        for (auto& ref : game.board) ref = Empty;
+        for (auto &ref : game.board) ref = Empty;
 
         game.board[4 + 1 * 8] = makeSpot(Pawn, White);
         Move move = Move{4, 1, 4, 0, 0};

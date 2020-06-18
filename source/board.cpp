@@ -302,9 +302,7 @@ namespace chess {
      */
     MoveList Board::getMoves(Piece const side, bool checkKing) const {
         MoveList moves;
-        MoveList pieceMoves;
-        pieceMoves.reserve(64);
-        moves.reserve(256);
+        moves.reserve(512);
 
         for (unsigned int ndx = 0; ndx < BOARD_SIZE; ndx++) {
             if ((getType(ndx) == Empty) || getSide(ndx) != side) continue;
@@ -313,28 +311,34 @@ namespace chess {
             unsigned int const row = ndx / 8;
             switch (getType(ndx)) {
                 case Pawn:
-                    pieceMoves = getPawnMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getPawnMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
                 case Rook:
-                    pieceMoves = getRookMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getRookMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
                 case Knight:
-                    pieceMoves = getKnightMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getKnightMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
                 case Bishop:
-                    pieceMoves = getBishopMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getBishopMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
                 case Queen:
-                    pieceMoves = getQueenMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getQueenMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
                 case King:
-                    pieceMoves = getKingMoves(col, row);
-                    moves.insert(moves.end(), pieceMoves.begin(), pieceMoves.end());
+                    getKingMoves(moves, col, row);
+                    //                    moves.insert(moves.end(), pieceMoves.begin(),
+                    //                    pieceMoves.end());
                     break;
             }
         }
@@ -447,6 +451,40 @@ namespace chess {
     }
 
     /**
+     * Utility method for pieces that can 'slide' one or more spots.  Called
+     * by the move generation methods for rooks, bishops and queens.  Basically
+     * it is the same as addMoveIfValid(...) but it includes adding end spots
+     * occupied by an opponent piece that can be captured and returns true if
+     * the check for more spots in this 'slide' should continue or false if the
+     * slide has terminated.
+     *
+     * @param moves Reference to the list of moves to add to
+     * @param col The column on the board to move from
+     * @param row The row on the board to move from
+     * @param x The column on the board to move to
+     * @param y The row on the board to move to
+     * @return true if the check for more 'slide' spots should
+     *         continue for this piece or false if the 'slide' has
+     *         completed by going off of the board or terminating
+     *         at a non-empty spot.
+     */
+    bool Board::addSlider(MoveList &moves, unsigned int const col, unsigned int const row,
+                          unsigned int const x, unsigned int const y) const {
+        if (!isValidSpot(x, y)) {
+            return false;
+        }
+        if (!isEmpty(x + y * 8)) {
+            if (getSide(col + row * 8) == getSide(x + y * 8)) {
+                return false;
+            }
+            addMoveIfValid(moves, col, row, x, y);
+            return false;
+        }
+        addMoveIfValid(moves, col, row, x, y);
+        return true;
+    }
+
+    /**
      * Get a list of all possible moves for a pawn at the given location on the board.
      *
      * @param col The column on the board to get moves from
@@ -454,11 +492,10 @@ namespace chess {
      * @return A new MoveList containing all possible moves a pawn could make from the given
      * spot
      */
-    MoveList Board::getPawnMoves(unsigned int const col, unsigned int const row) const {
+    void Board::getPawnMoves(MoveList &moves, unsigned int const col,
+                             unsigned int const row) const {
         unsigned int const ndx = col + row * 8;
         unsigned int const forward = getSide(ndx) == White ? -1 : 1;
-        MoveList moves;
-        moves.reserve(8);
 
         addMoveIfValid(moves, col, row, col, row + forward);
         if (!hasMoved(col + row * 8)) {
@@ -496,42 +533,6 @@ namespace chess {
                 }
             }
         }
-
-        return moves;
-    }
-
-    /**
-     * Utility method for pieces that can 'slide' one or more spots.  Called
-     * by the move generation methods for rooks, bishops and queens.  Basically
-     * it is the same as addMoveIfValid(...) but it includes adding end spots
-     * occupied by an opponent piece that can be captured and returns true if
-     * the check for more spots in this 'slide' should continue or false if the
-     * slide has terminated.
-     *
-     * @param moves Reference to the list of moves to add to
-     * @param col The column on the board to move from
-     * @param row The row on the board to move from
-     * @param x The column on the board to move to
-     * @param y The row on the board to move to
-     * @return true if the check for more 'slide' spots should
-     *         continue for this piece or false if the 'slide' has
-     *         completed by going off of the board or terminating
-     *         at a non-empty spot.
-     */
-    bool Board::addSlider(MoveList &moves, unsigned int const col, unsigned int const row,
-                          unsigned int const x, unsigned int const y) const {
-        if (!isValidSpot(x, y)) {
-            return false;
-        }
-        if (!isEmpty(x + y * 8)) {
-            if (getSide(col + row * 8) == getSide(x + y * 8)) {
-                return false;
-            }
-            addMoveIfValid(moves, col, row, x, y);
-            return false;
-        }
-        addMoveIfValid(moves, col, row, x, y);
-        return true;
     }
 
     /**
@@ -542,10 +543,8 @@ namespace chess {
      * @return A new MoveList containing all possible moves a rook could make from the given
      * spot
      */
-    MoveList Board::getRookMoves(unsigned int const col, unsigned int const row) const {
-        MoveList moves;
-        moves.reserve(64);
-
+    void Board::getRookMoves(MoveList &moves, unsigned int const col,
+                             unsigned int const row) const {
         for (unsigned int offset = 1; offset <= 7; offset++) {
             if (!addSlider(moves, col, row, col - offset, row)) break;
         }
@@ -558,7 +557,6 @@ namespace chess {
         for (unsigned int offset = 1; offset <= 7; offset++) {
             if (!addSlider(moves, col, row, col, row + offset)) break;
         }
-        return moves;
     }
 
     /**
@@ -569,10 +567,8 @@ namespace chess {
      * @return A new MoveList containing all possible moves a knight could make from the given
      * spot
      */
-    MoveList Board::getKnightMoves(unsigned int const col, unsigned int const row) const {
-        MoveList moves;
-        moves.reserve(8);
-
+    void Board::getKnightMoves(MoveList &moves, unsigned int const col,
+                               unsigned int const row) const {
         addMoveIfValid(moves, col, row, col - 1, row - 2);
         addMoveIfValid(moves, col, row, col + 1, row - 2);
         addMoveIfValid(moves, col, row, col - 1, row + 2);
@@ -581,8 +577,6 @@ namespace chess {
         addMoveIfValid(moves, col, row, col + 2, row - 1);
         addMoveIfValid(moves, col, row, col - 2, row + 1);
         addMoveIfValid(moves, col, row, col + 2, row + 1);
-
-        return moves;
     }
 
     /**
@@ -593,10 +587,8 @@ namespace chess {
      * @return A new MoveList containing all possible moves a bishop could make from the given
      * spot
      */
-    MoveList Board::getBishopMoves(unsigned int const col, unsigned int const row) const {
-        MoveList moves;
-        moves.reserve(64);
-
+    void Board::getBishopMoves(MoveList &moves, unsigned int const col,
+                               unsigned int const row) const {
         for (unsigned int offset = 1; offset <= 7; offset++) {
             if (!addSlider(moves, col, row, col - offset, row - offset)) break;
         }
@@ -609,8 +601,6 @@ namespace chess {
         for (unsigned int offset = 1; offset <= 7; offset++) {
             if (!addSlider(moves, col, row, col + offset, row + offset)) break;
         }
-
-        return moves;
     }
 
     /**
@@ -621,14 +611,10 @@ namespace chess {
      * @return A new MoveList containing all possible moves a queen could make from the given
      * spot
      */
-    MoveList Board::getQueenMoves(unsigned int const col, unsigned int const row) const {
-        MoveList moves;
-        moves.reserve(64);
-
-        moves = getRookMoves(col, row);
-        MoveList bishopMoves = getBishopMoves(col, row);
-        moves.insert(moves.end(), bishopMoves.begin(), bishopMoves.end());
-        return moves;
+    void Board::getQueenMoves(MoveList &moves, unsigned int const col,
+                              unsigned int const row) const {
+        getRookMoves(moves, col, row);
+        getBishopMoves(moves, col, row);
     }
 
     /**
@@ -639,10 +625,9 @@ namespace chess {
      * @return A new MoveList containing all possible moves a king could make from the given
      * spot
      */
-    MoveList Board::getKingMoves(unsigned int const col, unsigned int const row) const {
+    void Board::getKingMoves(MoveList &moves, unsigned int const col,
+                             unsigned int const row) const {
         unsigned int const ndx = col + row * 8;
-        MoveList moves;
-        moves.reserve(16);
 
         addMoveIfValid(moves, col, row, col - 1, row - 1);
         addMoveIfValid(moves, col, row, col + 1, row - 1);
@@ -665,7 +650,5 @@ namespace chess {
             && !hasMoved((col - 4) + row * 8)) {
             addMoveIfValid(moves, col, row, col - 2, row);
         }
-
-        return moves;
     }
 }  // namespace chess

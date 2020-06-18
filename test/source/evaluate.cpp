@@ -50,6 +50,40 @@ namespace chess {
         board.board[4 + 4 * 8] = makeSpot(Pawn, Black);
         score = Evaluator::evaluate(board);
         CHECK(score == 0);
+
+        // Test that pieces closer towards the center are rewarded more
+
+        // start with piece in corner and save score
+        board.board.fill(Empty);
+        board.board[7 + 7 * 8] = makeSpot(Pawn, White);
+        auto score1 = Evaluator::evaluate(board);
+
+        // move closer towards the center horizontally
+        board.board.fill(Empty);
+        board.board[6 + 7 * 8] = makeSpot(Pawn, White);
+        auto score2 = Evaluator::evaluate(board);
+        CHECK(score2 > score1);  // closer should have a higher score
+
+        score1 = score2;
+        board.board.fill(Empty);
+        // move closer towards the center horizontally
+        board.board[4 + 7 * 8] = makeSpot(Pawn, White);
+        score2 = Evaluator::evaluate(board);
+        CHECK(score2 > score1);  // closer should have a higher score
+
+        score1 = score2;
+        board.board.fill(Empty);
+        // move closer towards the center vertically
+        board.board[4 + 6 * 8] = makeSpot(Pawn, White);
+        score2 = Evaluator::evaluate(board);
+        CHECK(score2 > score1);  // closer should have a higher score
+
+        score1 = score2;
+        board.board.fill(Empty);
+        // move closer towards the center vertically
+        board.board[4 + 4 * 8] = makeSpot(Pawn, White);
+        score2 = Evaluator::evaluate(board);
+        CHECK(score2 > score1);  // closer should have a higher score
     }
 
 }  // namespace chess
