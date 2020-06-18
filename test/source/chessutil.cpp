@@ -92,5 +92,8 @@ namespace chess {
 
         CHECK(setPromoted(blackPawn, true) == (blackPawn | Promoted));
         CHECK(isPromoted(whitePawn));
+
+        string text = chess::addCommas(1'234'567'890L);
+        CHECK(text == "1,234,567,890");
     }
 }  // namespace chess
