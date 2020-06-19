@@ -286,6 +286,7 @@ namespace chess {
         // White can checkmate by moving from 0,7 to 0,0 (a1 to a8)
         agent.maxDepth = 1;  // change agent to go to a ply depth of 1
         agent.useThreads = false;
+        agent.extraChecks = true;
         move = Move(0, 7, 0, 0, 0);
         // execute the white queen move
         game.executeMove(move);
