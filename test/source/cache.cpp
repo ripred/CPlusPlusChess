@@ -17,9 +17,10 @@ namespace chess {
         Board game;
         Minimax agent(1);
 
-        agent.useThreads = false;
+        agent.useThreads = true;
         agent.useCache = true;
         agent.timeout = 10;
+        agent.maxDepth = 2;
         game.turn = White;
 
         CHECK(agent.cache.cache.empty());
@@ -29,6 +30,7 @@ namespace chess {
         CHECK(!agent.cache.cache.empty());
         Entry entry = agent.cache.lookup(game);
         CHECK(entry.isValid(game));
+        CHECK(entry.move == best);
 
         entry.setValue(42);
         CHECK(entry.getValue() == 42);
