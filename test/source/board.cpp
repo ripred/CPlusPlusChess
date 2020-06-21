@@ -502,5 +502,48 @@ namespace chess {
 
         // check that we searched fewer moves
         CHECK(agent.movesExamined < movesExamined);
+
+        // Test max repetitions allowed. Manually set up two pieces and
+        // move them back and forth enough times that it should be triggered:
+        game.maxRep = 3;
+        game.turns = 0;
+        game.turn = White;
+        game.history.clear();
+        game.board.fill(Empty);
+        game.board[3 + 0 * 8] = makeSpot(Queen, Black);
+        game.board[3 + 7 * 8] = makeSpot(Queen, White);
+        Move move1 = Move(3, 7, 3, 6, 0);
+        Move move2 = Move(3, 0, 3, 1, 0);
+        Move move3 = Move(3, 6, 3, 7, 0);
+        Move move4 = Move(3, 1, 3, 0, 0);
+        // repeat this sequence 3 times and make sure it is not flagged on the first two times,
+        // and make sure it gets flagged after the 3rd one.  To keep the code cleaner we'll
+        // use a local lambda functor to define the repetitive pattern:
+        auto take2Turns = [&]() -> bool {
+            bool result = game.checkDrawByRepetition(move1);
+            game.executeMove(move1);
+            game.advanceTurn();
+
+            result &= game.checkDrawByRepetition(move2);
+            game.executeMove(move2);
+            game.advanceTurn();
+
+            result &= game.checkDrawByRepetition(move3);
+            game.executeMove(move3);
+            game.advanceTurn();
+
+            result &= game.checkDrawByRepetition(move4);
+            game.executeMove(move4);
+            game.advanceTurn();
+
+            return result;
+        };
+
+        CHECK(!take2Turns());
+        CHECK(!take2Turns());
+        CHECK(!take2Turns());
+
+        // Test that if we tried the first move once more it would be caught:
+        CHECK(game.checkDrawByRepetition(move1));
     }
 }  // namespace chess

@@ -137,7 +137,7 @@ namespace chess {
     }
 
     /**
-     * Check for draw-by-repetition (same made too many times in a row by a player)
+     * Check for draw-by-repetition (same made too many times in a row by both players)
      */
     bool Board::checkDrawByRepetition(Move const &move, int limit /* = -1 */) const {
         if (limit < 0) {
@@ -146,19 +146,22 @@ namespace chess {
 
         // Calculate the number of back and forth moves it would require
         // to repeat ourselves 'limit' times.
-        size_t need = static_cast<int>(pow(2.0, (limit + 1)));
+        size_t need = limit * 4;  // one back and forth sequence each side, 'limit' times in a row
 
         if (history.size() < need) {
             return false;
         }
 
-        int count = 0;
-        for (auto i = history.size() - need; i < history.size(); i++) {
-            if ((history[i] == move) && (++count >= maxRep)) {
-                return true;
+        auto moveIter = history.end() - need;
+        Move const &move2 = *(moveIter + 2);
+
+        for (int i = 0; i < maxRep; i++) {
+            if (!((*moveIter == move) && (*(moveIter + 2) == move2))) {
+                return false;
             }
         }
-        return false;
+
+        return true;
     }
 
     /**
