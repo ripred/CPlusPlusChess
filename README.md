@@ -10,6 +10,5 @@
 
 # CPlusPlusChess
 ===
-24-bit ANSI colored, console-based chess using C++17.  Optional multi-threaded AI using Minimax with alpha-beta pruning.  Fully configurable properties including: ply depth, thread pool size, optional AI time limit, all colors, and more.
-
+24-bit ANSI colored, console-based chess using C++17.  Optional multi-threaded AI using Minimax with alpha-beta pruning.  Fully configurable properties including: ply depth, thread pool size, optional AI time limit, all colors, and more. 94% code coverage for unit tests. This is basically a modern C++ version of my JavaChess project.
 
