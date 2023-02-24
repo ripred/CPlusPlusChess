@@ -312,37 +312,14 @@ namespace chess {
 
             unsigned int const col = ndx % 8;
             unsigned int const row = ndx / 8;
+
             switch (getType(ndx)) {
-                case Pawn:
-                    getPawnMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
-                case Rook:
-                    getRookMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
-                case Knight:
-                    getKnightMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
-                case Bishop:
-                    getBishopMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
-                case Queen:
-                    getQueenMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
-                case King:
-                    getKingMoves(moves, col, row);
-                    //                    moves.insert(moves.end(), pieceMoves.begin(),
-                    //                    pieceMoves.end());
-                    break;
+                case Pawn:      getPawnMoves(moves, col, row);      break;
+                case Rook:      getRookMoves(moves, col, row);      break;
+                case Knight:    getKnightMoves(moves, col, row);    break;
+                case Bishop:    getBishopMoves(moves, col, row);    break;
+                case Queen:     getQueenMoves(moves, col, row);     break;
+                case King:      getKingMoves(moves, col, row);      break;
             }
         }
 
@@ -404,8 +381,8 @@ namespace chess {
         if (!isValidSpot(toCol, toRow)) {
             return;
         }
-        unsigned int const fi = fromCol + fromRow * 8;
-        unsigned int const ti = toCol + toRow * 8;
+        unsigned int const fi = fromCol + fromRow * 8;  // from index 0 - 63
+        unsigned int const ti = toCol + toRow * 8;      // to index 0 - 63
 
         int value = 0;
         Piece pieceType = getType(fi);
@@ -500,20 +477,25 @@ namespace chess {
         unsigned int const ndx = col + row * 8;
         unsigned int const forward = getSide(ndx) == White ? -1 : 1;
 
+        // move forward if possible
         addMoveIfValid(moves, col, row, col, row + forward);
+        
+        // move forward two places if possible and we havent moved
         if (!hasMoved(col + row * 8)) {
             addMoveIfValid(moves, col, row, col, row + forward + forward);
         }
 
+        // see if we can capture a piece forward and to the left
         if (isValidSpot(col - 1, row + forward) && !isEmpty((col - 1) + (row + forward) * 8)) {
             addMoveIfValid(moves, col, row, col - 1, row + forward);
         }
 
+        // see if we can capture a piece forward and to the right
         if (isValidSpot(col + 1, row + forward) && !isEmpty((col + 1) + (row + forward) * 8)) {
             addMoveIfValid(moves, col, row, col + 1, row + forward);
         }
 
-        // en-passant! on the left
+        // check for en-passant! on the left
         unsigned int epx = col - 1;
         if (isValidSpot(epx, row) && getSide(epx + row * 8) != getSide(ndx)) {
             if (lastMove().getToCol() == epx && lastMove().getToRow() == row) {
@@ -525,7 +507,7 @@ namespace chess {
             }
         }
 
-        // en-passant! on the right
+        // check en-passant! on the right
         epx = col + 1;
         if (isValidSpot(epx, row) && getSide(epx + row * 8) != getSide(ndx)) {
             if (lastMove().getToCol() == epx && lastMove().getToRow() == row) {
