@@ -314,12 +314,24 @@ namespace chess {
             unsigned int const row = ndx / 8;
 
             switch (getType(ndx)) {
-                case Pawn:      getPawnMoves(moves, col, row);      break;
-                case Rook:      getRookMoves(moves, col, row);      break;
-                case Knight:    getKnightMoves(moves, col, row);    break;
-                case Bishop:    getBishopMoves(moves, col, row);    break;
-                case Queen:     getQueenMoves(moves, col, row);     break;
-                case King:      getKingMoves(moves, col, row);      break;
+                case Pawn:
+                    getPawnMoves(moves, col, row);
+                    break;
+                case Rook:
+                    getRookMoves(moves, col, row);
+                    break;
+                case Knight:
+                    getKnightMoves(moves, col, row);
+                    break;
+                case Bishop:
+                    getBishopMoves(moves, col, row);
+                    break;
+                case Queen:
+                    getQueenMoves(moves, col, row);
+                    break;
+                case King:
+                    getKingMoves(moves, col, row);
+                    break;
             }
         }
 
@@ -479,7 +491,7 @@ namespace chess {
 
         // move forward if possible
         addMoveIfValid(moves, col, row, col, row + forward);
-        
+
         // move forward two places if possible and we havent moved
         if (!hasMoved(col + row * 8)) {
             addMoveIfValid(moves, col, row, col, row + forward + forward);

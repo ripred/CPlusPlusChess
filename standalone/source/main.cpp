@@ -115,8 +115,9 @@ static void showBoard(Board &board, int movesExamined = 0) {
     auto lines = Board::to_string(board);
     int appendToLineNumber = 4;
     int score = Evaluator::evaluate(board);
-    string winningSide = (score < 0) ? getColor(setSide(0, Black))
-                                     : (score > 0) ? getColor(setSide(0, White)) : "even";
+    string winningSide = (score < 0)   ? getColor(setSide(0, Black))
+                         : (score > 0) ? getColor(setSide(0, White))
+                                       : "even";
     score = abs(score);
     string scoreStr = addCommas(score);
     string numExaminedStr = addCommas(movesExamined);
