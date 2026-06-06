@@ -19,8 +19,8 @@ include(../cmake/CPM.cmake)
 
 CPMAddPackage(
   NAME doctest
-  GITHUB_REPOSITORY onqtam/doctest
-  GIT_TAG 2.3.7
+  GITHUB_REPOSITORY doctest/doctest
+  GIT_TAG v2.4.12
 )
 
 if (TEST_INSTALLED_VERSION)
