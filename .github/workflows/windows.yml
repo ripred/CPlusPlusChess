@@ -14,10 +14,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     
     - name: configure
-      run: cmake -Htest -Bbuild
+      run: cmake -Htest -Bbuild -DCMAKE_CXX_FLAGS="/wd5285"
 
     - name: build
       run: cmake --build build --config Debug -j4
