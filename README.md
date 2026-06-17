@@ -6,6 +6,10 @@
 [![Standalone](https://github.com/ripred/CPlusPlusChess/actions/workflows/standalone.yml/badge.svg?branch=master)](https://github.com/ripred/CPlusPlusChess/actions/workflows/standalone.yml)
 [![codecov](https://codecov.io/gh/ripred/CPlusPlusChess/branch/master/graph/badge.svg?branch=master)](https://codecov.io/gh/ripred/CPlusPlusChess)
 
+[![License](https://flat.badgen.net/github/license/ripred/CPlusPlusChess)](https://github.com/ripred/CPlusPlusChess/blob/master/LICENSE)
+[![Stars](https://flat.badgen.net/github/stars/ripred/CPlusPlusChess)](https://github.com/ripred/CPlusPlusChess/stargazers)
+[![Forks](https://flat.badgen.net/github/forks/ripred/CPlusPlusChess)](https://github.com/ripred/CPlusPlusChess/network/members)
+
 <p align="center">
   <img src="https://repository-images.githubusercontent.com/254842585/4dfa7580-7ffb-11ea-99d0-46b8fe2f4170" height="75" width="auto" />
 
